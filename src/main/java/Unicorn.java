@@ -18,6 +18,7 @@ public class Unicorn {
 
         Scanner scanner = new Scanner(System.in);
         String[] listOfInputs = new String[100];
+        int[] listOfInputStatuses = new int[100];
         int i = 0;
 
         System.out.println(banner);
@@ -30,10 +31,24 @@ public class Unicorn {
 
             if (Objects.equals(input, "list")) {
                 for (int j = 0; j < i; j++) {
+                    if (listOfInputStatuses[j] == 0) {
+                        System.out.print("[ ] ");
+                    } else {
+                        System.out.print("[X] ");
+                    }
                     System.out.println((j + 1) + ": " + listOfInputs[j]);
                 }
+
+            } else if (input.startsWith("mark ")) {
+                int taskNumber = Integer.parseInt(input.substring(5));
+                listOfInputStatuses[taskNumber - 1] = 1;
+
+                System.out.println("Nice! I've marked this task as done:");
+                System.out.println("[X] " + listOfInputs[taskNumber - 1]);
+
             } else {
                 listOfInputs[i] = input;
+                listOfInputStatuses[i] = 0;
                 i++;
                 System.out.println("added: " + input);
             }
