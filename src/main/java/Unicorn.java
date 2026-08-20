@@ -1,5 +1,6 @@
 import java.util.Objects;
 import java.util.Scanner;
+
 public class Unicorn {
     public static void main(String[] args) {
         String banner = "          /\\\n"
@@ -14,15 +15,29 @@ public class Unicorn {
                 + "     /_|___|_\\\n"
                 + "       /   \\\n"
                 + "      ✨   ✨\n";
+
         Scanner scanner = new Scanner(System.in);
+        String[] listOfInputs = new String[100];
+        int i = 0;
 
         System.out.println(banner);
         System.out.println("Hello! I'm Unicorn.");
         System.out.println("What can I do for you?");
+
         String input = scanner.nextLine();
 
         while (!Objects.equals(input, "bye")) {
-            System.out.println(input);
+
+            if (Objects.equals(input, "list")) {
+                for (int j = 0; j < i; j++) {
+                    System.out.println((j + 1) + ": " + listOfInputs[j]);
+                }
+            } else {
+                listOfInputs[i] = input;
+                i++;
+                System.out.println("added: " + input);
+            }
+
             input = scanner.nextLine();
         }
 
