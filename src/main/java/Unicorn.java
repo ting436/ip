@@ -79,6 +79,15 @@ public class Unicorn {
                     }
                 }
 
+            } else if (input.startsWith("delete ")) {
+                
+                int taskNumber = Integer.parseInt(input.substring(7));
+                Task deletedTask = listOfTasks.remove(taskNumber - 1);
+
+                System.out.println("Noted. I've removed this task:");
+                System.out.println("  " + deletedTask);
+                System.out.println("Now you have " + listOfTasks.size() + " tasks in the list.");
+
             } else {
                 if (input.startsWith("todo ")) {
                     String description = input.substring(5);
