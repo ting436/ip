@@ -80,13 +80,29 @@ public class Unicorn {
                 }
 
             } else if (input.startsWith("delete ")) {
-                
-                int taskNumber = Integer.parseInt(input.substring(7));
-                Task deletedTask = listOfTasks.remove(taskNumber - 1);
+                String argument = input.substring(7);
 
-                System.out.println("Noted. I've removed this task:");
-                System.out.println("  " + deletedTask);
-                System.out.println("Now you have " + listOfTasks.size() + " tasks in the list.");
+                if (argument.isBlank()) {
+                    System.out.println("OOPS!!! Please specify a task number.");
+                } else {
+                    try {
+                        int taskNumber = Integer.parseInt(argument);
+
+                        if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
+                            System.out.println("OOPS!!! That task number does not exist.");
+                        } else {
+                            Task deletedTask = listOfTasks.remove(taskNumber - 1);
+
+                            System.out.println("Noted. I've removed this task:");
+                            System.out.println("  " + deletedTask);
+                            System.out.println("Now you have "
+                                    + listOfTasks.size() + " tasks in the list.");
+                        }
+
+                    } catch (NumberFormatException e) {
+                        System.out.println("OOPS!!! Please provide a valid task number.");
+                    }
+                }
 
             } else {
                 if (input.startsWith("todo ")) {
