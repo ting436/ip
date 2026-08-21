@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -17,8 +18,7 @@ public class Unicorn {
                 + "      ✨   ✨\n";
 
         Scanner scanner = new Scanner(System.in);
-        Task[] listOfTasks = new Task[100];
-        int i = 0;
+        ArrayList<Task> listOfTasks = new ArrayList<>();
 
         System.out.println(banner);
         System.out.println("Hello! I'm Unicorn.");
@@ -29,8 +29,8 @@ public class Unicorn {
         while (!Objects.equals(input, "bye")) {
 
             if (Objects.equals(input, "list")) {
-                for (int j = 0; j < i; j++) {
-                    System.out.println((j + 1) + ": " + listOfTasks[j]);
+                for (int j = 0; j < listOfTasks.size(); j++) {
+                    System.out.println((j + 1) + ": " + listOfTasks.get(j));
                 }
 
             } else if (input.startsWith("mark ")) {
@@ -42,13 +42,13 @@ public class Unicorn {
                     try {
                         int taskNumber = Integer.parseInt(argument);
 
-                        if (taskNumber < 1 || taskNumber > i) {
+                        if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
                             System.out.println("OOPS!!! That task number does not exist.");
                         } else {
-                            listOfTasks[taskNumber - 1].markAsDone();
+                            listOfTasks.get(taskNumber - 1).markAsDone();
 
                             System.out.println("Nice! I've marked this task as done:");
-                            System.out.println(listOfTasks[taskNumber - 1]);
+                            System.out.println(listOfTasks.get(taskNumber - 1));
                         }
 
                     } catch (NumberFormatException e) {
@@ -65,13 +65,13 @@ public class Unicorn {
                     try {
                         int taskNumber = Integer.parseInt(argument);
 
-                        if (taskNumber < 1 || taskNumber > i) {
+                        if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
                             System.out.println("OOPS!!! That task number does not exist.");
                         } else {
-                            listOfTasks[taskNumber - 1].markAsUndone();
+                            listOfTasks.get(taskNumber - 1).markAsUndone();
 
                             System.out.println("OK, I've marked this task as not done yet:");
-                            System.out.println(listOfTasks[taskNumber - 1]);
+                            System.out.println(listOfTasks.get(taskNumber - 1));
                         }
 
                     } catch (NumberFormatException e) {
@@ -82,17 +82,23 @@ public class Unicorn {
             } else {
                 if (input.startsWith("todo ")) {
                     String description = input.substring(5);
+
                     if (description.isBlank()) {
-                        System.out.println("OOPS!!! The description of a todo cannot be empty.");
+                        System.out.println(
+                                "OOPS!!! The description of a todo cannot be empty.");
+                        input = scanner.nextLine();
                         continue;
                     }
 
-                    listOfTasks[i] = new TodoTask(description);
+                    listOfTasks.add(new TodoTask(description));
 
                 } else if (input.startsWith("deadline ")) {
                     String description = input.substring(9);
+
                     if (description.isBlank()) {
-                        System.out.println("OOPS!!! The description of a deadline cannot be empty.");
+                        System.out.println(
+                                "OOPS!!! The description of a deadline cannot be empty.");
+                        input = scanner.nextLine();
                         continue;
                     }
 
@@ -104,12 +110,15 @@ public class Unicorn {
                         by = input.substring(byIndex + 5);
                     }
 
-                    listOfTasks[i] = new DeadlineTask(description, by);
+                    listOfTasks.add(new DeadlineTask(description, by));
 
                 } else if (input.startsWith("event ")) {
                     String description = input.substring(6);
+
                     if (description.isBlank()) {
-                        System.out.println("OOPS!!! The description of an event cannot be empty.");
+                        System.out.println(
+                                "OOPS!!! The description of an event cannot be empty.");
+                        input = scanner.nextLine();
                         continue;
                     }
 
@@ -125,21 +134,22 @@ public class Unicorn {
                         to = input.substring(toIndex + 5);
                     }
 
-                    listOfTasks[i] = new EventTask(description, from, to);
+                    listOfTasks.add(new EventTask(description, from, to));
 
                 } else {
-                    System.out.println("I don't understand that command. You may add tasks by specifying todo, " +
-                            "event, or deadline at the start, or view your tasks by entering 'list'." +
-                            "You may also mark or unmark your tasks by specifying 'mark' or 'unmark' followed by" +
-                            "the index of the task.");
+                    System.out.println(
+                            "I don't understand that command. You may add tasks by specifying todo, "
+                                    + "event, or deadline at the start, or view your tasks by entering 'list'. "
+                                    + "You may also mark, unmark, or delete your tasks by specifying "
+                                    + "'mark', 'unmark', or 'delete' followed by the index of the task.");
                     input = scanner.nextLine();
                     continue;
                 }
 
-                i++;
                 System.out.println("Got it. I've added this task:");
-                System.out.println("  " + listOfTasks[i - 1]);
-                System.out.println("Now you have " + i + " tasks in the list.");
+                System.out.println("  " + listOfTasks.get(listOfTasks.size() - 1));
+                System.out.println("Now you have "
+                        + listOfTasks.size() + " tasks in the list.");
             }
 
             input = scanner.nextLine();
