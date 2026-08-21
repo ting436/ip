@@ -30,9 +30,7 @@ public class Unicorn {
 
             if (Objects.equals(input, "list")) {
                 for (int j = 0; j < i; j++) {
-                    System.out.println(
-                            (j + 1) + ": " + listOfTasks[j].toString()
-                    );
+                    System.out.println((j + 1) + ": " + listOfTasks[j]);
                 }
 
             } else if (input.startsWith("mark ")) {
@@ -40,27 +38,47 @@ public class Unicorn {
                 listOfTasks[taskNumber - 1].markAsDone();
 
                 System.out.println("Nice! I've marked this task as done:");
-                System.out.println(listOfTasks[taskNumber - 1].toString());
+                System.out.println(listOfTasks[taskNumber - 1]);
 
             } else if (input.startsWith("unmark ")) {
                 int taskNumber = Integer.parseInt(input.substring(7));
                 listOfTasks[taskNumber - 1].markAsUndone();
 
                 System.out.println("OK, I've marked this task as not done yet:");
-                System.out.println(listOfTasks[taskNumber - 1].toString());
+                System.out.println(listOfTasks[taskNumber - 1]);
 
             } else {
                 if (input.startsWith("todo ")) {
                     String description = input.substring(5);
-                    listOfTasks[i] = new Task(description, TaskType.TODO);
+                    listOfTasks[i] = new TodoTask(description);
 
                 } else if (input.startsWith("deadline ")) {
                     String description = input.substring(9);
-                    listOfTasks[i] = new Task(description, TaskType.DEADLINE);
+                    String by = "";
+
+                    if (input.contains(" /by ")) {
+                        int byIndex = input.indexOf(" /by ");
+                        description = input.substring(9, byIndex);
+                        by = input.substring(byIndex + 5);
+                    }
+
+                    listOfTasks[i] = new DeadlineTask(description, by);
 
                 } else if (input.startsWith("event ")) {
                     String description = input.substring(6);
-                    listOfTasks[i] = new Task(description, TaskType.EVENT);
+                    String from = "";
+                    String to = "";
+
+                    if (input.contains(" /from ") && input.contains(" /to ")) {
+                        int fromIndex = input.indexOf(" /from ");
+                        int toIndex = input.indexOf(" /to ");
+
+                        description = input.substring(6, fromIndex);
+                        from = input.substring(fromIndex + 7, toIndex);
+                        to = input.substring(toIndex + 5);
+                    }
+
+                    listOfTasks[i] = new EventTask(description, from, to);
 
                 } else {
                     System.out.println("I don't understand that command.");

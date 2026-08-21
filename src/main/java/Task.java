@@ -1,16 +1,14 @@
 public class Task {
     protected String description;
     protected boolean isDone;
-    protected TaskType type;
 
-    public Task(String description, TaskType type) {
+    public Task(String description) {
         this.description = description;
         this.isDone = false;
-        this.type = type;
     }
 
     public String getStatusIcon() {
-        return (isDone ? "X" : " ");
+        return isDone ? "X" : " ";
     }
 
     public void markAsDone() {
@@ -21,22 +19,8 @@ public class Task {
         isDone = false;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
     @Override
     public String toString() {
-        String typeIcon;
-
-        if (type == TaskType.TODO) {
-            typeIcon = "T";
-        } else if (type == TaskType.DEADLINE) {
-            typeIcon = "D";
-        } else {
-            typeIcon = "E";
-        }
-
-        return "[" + typeIcon + "][" + getStatusIcon() + "] " + description;
+        return "[" + getStatusIcon() + "] " + description;
     }
 }
