@@ -34,18 +34,50 @@ public class Unicorn {
                 }
 
             } else if (input.startsWith("mark ")) {
-                int taskNumber = Integer.parseInt(input.substring(5));
-                listOfTasks[taskNumber - 1].markAsDone();
+                String argument = input.substring(5);
 
-                System.out.println("Nice! I've marked this task as done:");
-                System.out.println(listOfTasks[taskNumber - 1]);
+                if (argument.isBlank()) {
+                    System.out.println("OOPS!!! Please specify a task number.");
+                } else {
+                    try {
+                        int taskNumber = Integer.parseInt(argument);
+
+                        if (taskNumber < 1 || taskNumber > i) {
+                            System.out.println("OOPS!!! That task number does not exist.");
+                        } else {
+                            listOfTasks[taskNumber - 1].markAsDone();
+
+                            System.out.println("Nice! I've marked this task as done:");
+                            System.out.println(listOfTasks[taskNumber - 1]);
+                        }
+
+                    } catch (NumberFormatException e) {
+                        System.out.println("OOPS!!! Please provide a valid task number.");
+                    }
+                }
 
             } else if (input.startsWith("unmark ")) {
-                int taskNumber = Integer.parseInt(input.substring(7));
-                listOfTasks[taskNumber - 1].markAsUndone();
+                String argument = input.substring(7);
 
-                System.out.println("OK, I've marked this task as not done yet:");
-                System.out.println(listOfTasks[taskNumber - 1]);
+                if (argument.isBlank()) {
+                    System.out.println("OOPS!!! Please specify a task number.");
+                } else {
+                    try {
+                        int taskNumber = Integer.parseInt(argument);
+
+                        if (taskNumber < 1 || taskNumber > i) {
+                            System.out.println("OOPS!!! That task number does not exist.");
+                        } else {
+                            listOfTasks[taskNumber - 1].markAsUndone();
+
+                            System.out.println("OK, I've marked this task as not done yet:");
+                            System.out.println(listOfTasks[taskNumber - 1]);
+                        }
+
+                    } catch (NumberFormatException e) {
+                        System.out.println("OOPS!!! Please provide a valid task number.");
+                    }
+                }
 
             } else {
                 if (input.startsWith("todo ")) {
