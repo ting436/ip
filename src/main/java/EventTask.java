@@ -10,7 +10,7 @@ public class EventTask extends Task {
 
     @Override
     public String toString() {
-        return "[E][" + getStatusIcon() + "] "
+        return "[E] [" + getStatusIcon() + "] "
                 + description
                 + " (from: " + from + " to: " + to + ")";
     }
