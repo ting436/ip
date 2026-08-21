@@ -50,10 +50,20 @@ public class Unicorn {
             } else {
                 if (input.startsWith("todo ")) {
                     String description = input.substring(5);
+                    if (description.isBlank()) {
+                        System.out.println("OOPS!!! The description of a todo cannot be empty.");
+                        continue;
+                    }
+
                     listOfTasks[i] = new TodoTask(description);
 
                 } else if (input.startsWith("deadline ")) {
                     String description = input.substring(9);
+                    if (description.isBlank()) {
+                        System.out.println("OOPS!!! The description of a deadline cannot be empty.");
+                        continue;
+                    }
+
                     String by = "";
 
                     if (input.contains(" /by ")) {
@@ -66,6 +76,11 @@ public class Unicorn {
 
                 } else if (input.startsWith("event ")) {
                     String description = input.substring(6);
+                    if (description.isBlank()) {
+                        System.out.println("OOPS!!! The description of an event cannot be empty.");
+                        continue;
+                    }
+
                     String from = "";
                     String to = "";
 
@@ -81,7 +96,10 @@ public class Unicorn {
                     listOfTasks[i] = new EventTask(description, from, to);
 
                 } else {
-                    System.out.println("I don't understand that command.");
+                    System.out.println("I don't understand that command. You may add tasks by specifying todo, " +
+                            "event, or deadline at the start, or view your tasks by entering 'list'." +
+                            "You may also mark or unmark your tasks by specifying 'mark' or 'unmark' followed by" +
+                            "the index of the task.");
                     input = scanner.nextLine();
                     continue;
                 }
