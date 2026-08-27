@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Scanner;
 
 /**
  * Runs the Unicorn task chatbot.
@@ -25,47 +24,42 @@ public class Unicorn {
                 + "       /   \\\n"
                 + "      ✨   ✨\n";
 
-        Scanner scanner = new Scanner(System.in);
-        TaskList listOfTasks = loadTasks();
+        Ui ui = new Ui();
+        TaskList listOfTasks = loadTasks(ui);
 
-        System.out.println(banner);
-        System.out.println("Hello! I'm Unicorn.");
-        System.out.println("What can I do for you?");
+        ui.showWelcome(banner);
 
-        String input = scanner.nextLine();
+        String input = ui.readCommand();
 
         while (!Objects.equals(input, "bye")) {
 
             if (Objects.equals(input, "list")) {
-                for (int j = 0; j < listOfTasks.size(); j++) {
-                    System.out.println((j + 1) + ": " + listOfTasks.get(j));
-                }
+                ui.showTaskList(listOfTasks);
 
             } else if (input.startsWith("mark ")) {
                 String argument = input.substring(5);
 
                 if (argument.isBlank()) {
-                    System.out.println("OOPS!!! Please specify a task number.");
+                    ui.showError("OOPS!!! Please specify a task number.");
                 } else {
                     try {
                         int taskNumber = Integer.parseInt(argument);
 
                         if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
-                            System.out.println("OOPS!!! That task number does not exist.");
+                            ui.showError("OOPS!!! That task number does not exist.");
                         } else {
                             Task task = listOfTasks.get(taskNumber - 1);
                             boolean wasDone = task.isDone();
                             task.markAsDone();
-                            if (saveTasks(listOfTasks)) {
-                                System.out.println("Nice! I've marked this task as done:");
-                                System.out.println(task);
+                            if (saveTasks(listOfTasks, ui)) {
+                                ui.showTaskMarked(task);
                             } else {
                                 restoreStatus(task, wasDone);
                             }
                         }
 
                     } catch (NumberFormatException e) {
-                        System.out.println("OOPS!!! Please provide a valid task number.");
+                        ui.showError("OOPS!!! Please provide a valid task number.");
                     }
                 }
 
@@ -73,27 +67,26 @@ public class Unicorn {
                 String argument = input.substring(7);
 
                 if (argument.isBlank()) {
-                    System.out.println("OOPS!!! Please specify a task number.");
+                    ui.showError("OOPS!!! Please specify a task number.");
                 } else {
                     try {
                         int taskNumber = Integer.parseInt(argument);
 
                         if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
-                            System.out.println("OOPS!!! That task number does not exist.");
+                            ui.showError("OOPS!!! That task number does not exist.");
                         } else {
                             Task task = listOfTasks.get(taskNumber - 1);
                             boolean wasDone = task.isDone();
                             task.markAsUndone();
-                            if (saveTasks(listOfTasks)) {
-                                System.out.println("OK, I've marked this task as not done yet:");
-                                System.out.println(task);
+                            if (saveTasks(listOfTasks, ui)) {
+                                ui.showTaskUnmarked(task);
                             } else {
                                 restoreStatus(task, wasDone);
                             }
                         }
 
                     } catch (NumberFormatException e) {
-                        System.out.println("OOPS!!! Please provide a valid task number.");
+                        ui.showError("OOPS!!! Please provide a valid task number.");
                     }
                 }
 
@@ -101,27 +94,24 @@ public class Unicorn {
                 String argument = input.substring(7);
 
                 if (argument.isBlank()) {
-                    System.out.println("OOPS!!! Please specify a task number.");
+                    ui.showError("OOPS!!! Please specify a task number.");
                 } else {
                     try {
                         int taskNumber = Integer.parseInt(argument);
 
                         if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
-                            System.out.println("OOPS!!! That task number does not exist.");
+                            ui.showError("OOPS!!! That task number does not exist.");
                         } else {
                             Task deletedTask = listOfTasks.delete(taskNumber - 1);
-                            if (saveTasks(listOfTasks)) {
-                                System.out.println("Noted. I've removed this task:");
-                                System.out.println("  " + deletedTask);
-                                System.out.println("Now you have "
-                                        + listOfTasks.size() + " tasks in the list.");
+                            if (saveTasks(listOfTasks, ui)) {
+                                ui.showTaskDeleted(deletedTask, listOfTasks.size());
                             } else {
                                 listOfTasks.add(taskNumber - 1, deletedTask);
                             }
                         }
 
                     } catch (NumberFormatException e) {
-                        System.out.println("OOPS!!! Please provide a valid task number.");
+                        ui.showError("OOPS!!! Please provide a valid task number.");
                     }
                 }
 
@@ -130,9 +120,8 @@ public class Unicorn {
                     String description = input.substring(5);
 
                     if (description.isBlank()) {
-                        System.out.println(
-                                "OOPS!!! The description of a todo cannot be empty.");
-                        input = scanner.nextLine();
+                        ui.showError("OOPS!!! The description of a todo cannot be empty.");
+                        input = ui.readCommand();
                         continue;
                     }
 
@@ -142,9 +131,8 @@ public class Unicorn {
                     String description = input.substring(9);
 
                     if (description.isBlank()) {
-                        System.out.println(
-                                "OOPS!!! The description of a deadline cannot be empty.");
-                        input = scanner.nextLine();
+                        ui.showError("OOPS!!! The description of a deadline cannot be empty.");
+                        input = ui.readCommand();
                         continue;
                     }
 
@@ -162,9 +150,8 @@ public class Unicorn {
                     String description = input.substring(6);
 
                     if (description.isBlank()) {
-                        System.out.println(
-                                "OOPS!!! The description of an event cannot be empty.");
-                        input = scanner.nextLine();
+                        ui.showError("OOPS!!! The description of an event cannot be empty.");
+                        input = ui.readCommand();
                         continue;
                     }
 
@@ -183,42 +170,36 @@ public class Unicorn {
                     listOfTasks.add(new EventTask(description, from, to));
 
                 } else {
-                    System.out.println(
-                            "I don't understand that command. You may add tasks by specifying todo, "
-                                    + "event, or deadline at the start, or view your tasks by entering 'list'. "
-                                    + "You may also mark, unmark, or delete your tasks by specifying "
-                                    + "'mark', 'unmark', or 'delete' followed by the index of the task.");
-                    input = scanner.nextLine();
+                    ui.showHelp();
+                    input = ui.readCommand();
                     continue;
                 }
 
                 Task addedTask = listOfTasks.get(listOfTasks.size() - 1);
-                if (saveTasks(listOfTasks)) {
-                    System.out.println("Got it. I've added this task:");
-                    System.out.println("  " + addedTask);
-                    System.out.println("Now you have "
-                            + listOfTasks.size() + " tasks in the list.");
+                if (saveTasks(listOfTasks, ui)) {
+                    ui.showTaskAdded(addedTask, listOfTasks.size());
                 } else {
                     listOfTasks.delete(listOfTasks.size() - 1);
                 }
             }
 
-            input = scanner.nextLine();
+            input = ui.readCommand();
         }
 
-        System.out.println("Bye. Hope to see you again soon!");
+        ui.showGoodbye();
     }
 
     /**
      * Loads stored tasks while allowing the chatbot to start if the data cannot be used.
      *
+     * @param ui user interface used to show a loading error
      * @return loaded tasks, or an empty list when loading fails
      */
-    private static TaskList loadTasks() {
+    private static TaskList loadTasks(Ui ui) {
         try {
             return new TaskList(Storage.load());
         } catch (IOException | IllegalArgumentException e) {
-            System.out.println("OOPS!!! I could not load your saved tasks. Starting with an empty list.");
+            ui.showError("OOPS!!! I could not load your saved tasks. Starting with an empty list.");
             return new TaskList();
         }
     }
@@ -227,14 +208,15 @@ public class Unicorn {
      * Saves tasks and reports a failure without ending the chatbot.
      *
      * @param tasks tasks to save
+     * @param ui user interface used to show a save error
      * @return {@code true} when the tasks were saved successfully
      */
-    private static boolean saveTasks(TaskList tasks) {
+    private static boolean saveTasks(TaskList tasks, Ui ui) {
         try {
             Storage.save(tasks.asList());
             return true;
         } catch (IOException e) {
-            System.out.println("OOPS!!! I could not save your tasks. The change was not applied.");
+            ui.showError("OOPS!!! I could not save your tasks. The change was not applied.");
             return false;
         }
     }
