@@ -1,8 +1,15 @@
+package unicorn.storage;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import unicorn.task.DeadlineTask;
+import unicorn.task.EventTask;
+import unicorn.task.Task;
+import unicorn.task.TodoTask;
 
 /**
  * Saves and loads the application's task data.
@@ -78,15 +85,15 @@ public class Storage {
      * @return task type, completion status, and task details separated by vertical bars
      */
     private static String toFileString(Task task) {
-        String completed = task.isDone ? "1" : "0";
+        String completed = task.isDone() ? "1" : "0";
         if (task instanceof TodoTask) {
-            return "T | " + completed + " | " + escapeField(task.description);
+            return "T | " + completed + " | " + escapeField(task.getDescription());
         } else if (task instanceof DeadlineTask deadlineTask) {
-            return "D | " + completed + " | " + escapeField(task.description) + " | "
-                    + escapeField(deadlineTask.by);
+            return "D | " + completed + " | " + escapeField(task.getDescription()) + " | "
+                    + escapeField(deadlineTask.getBy());
         } else if (task instanceof EventTask eventTask) {
-            return "E | " + completed + " | " + escapeField(task.description) + " | "
-                    + escapeField(eventTask.from) + " | " + escapeField(eventTask.to);
+            return "E | " + completed + " | " + escapeField(task.getDescription()) + " | "
+                    + escapeField(eventTask.getFrom()) + " | " + escapeField(eventTask.getTo());
         }
         throw new IllegalArgumentException("Unsupported task type");
     }

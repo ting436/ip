@@ -1,5 +1,15 @@
+package unicorn;
+
 import java.io.IOException;
 import java.util.Objects;
+
+import unicorn.storage.Storage;
+import unicorn.task.DeadlineTask;
+import unicorn.task.EventTask;
+import unicorn.task.Task;
+import unicorn.task.TaskList;
+import unicorn.task.TodoTask;
+import unicorn.ui.Ui;
 
 /**
  * Runs the Unicorn task chatbot.

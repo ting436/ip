@@ -1,4 +1,9 @@
+package unicorn.ui;
+
 import java.util.Scanner;
+
+import unicorn.task.Task;
+import unicorn.task.TaskList;
 
 /**
  * Handles all console input and output for the chatbot.

@@ -1,3 +1,5 @@
+package unicorn.task;
+
 public class Task {
     protected String description;
     protected boolean isDone;
@@ -18,6 +20,15 @@ public class Task {
      */
     public boolean isDone() {
         return isDone;
+    }
+
+    /**
+     * Returns the task description.
+     *
+     * @return task description
+     */
+    public String getDescription() {
+        return description;
     }
 
     public void markAsDone() {

@@ -1,7 +1,14 @@
+package unicorn.storage;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
+import unicorn.task.DeadlineTask;
+import unicorn.task.EventTask;
+import unicorn.task.Task;
+import unicorn.task.TodoTask;
 
 /**
  * Checks that task storage saves and reloads all supported task types.
