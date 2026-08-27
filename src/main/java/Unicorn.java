@@ -11,9 +11,8 @@ public class Unicorn {
      * Starts the chatbot, loading existing tasks and saving each successful list change.
      *
      * @param args command-line arguments, which are not used
-     * @throws IOException if the task data file cannot be read or written
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         String banner = "          /\\\n"
                 + "         /  \\\n"
                 + "        / /\\ \\\n"
@@ -28,7 +27,7 @@ public class Unicorn {
                 + "      ✨   ✨\n";
 
         Scanner scanner = new Scanner(System.in);
-        ArrayList<Task> listOfTasks = new ArrayList<>(Storage.load());
+        ArrayList<Task> listOfTasks = loadTasks();
 
         System.out.println(banner);
         System.out.println("Hello! I'm Unicorn.");
@@ -55,11 +54,15 @@ public class Unicorn {
                         if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
                             System.out.println("OOPS!!! That task number does not exist.");
                         } else {
-                            listOfTasks.get(taskNumber - 1).markAsDone();
-                            Storage.save(listOfTasks);
-
-                            System.out.println("Nice! I've marked this task as done:");
-                            System.out.println(listOfTasks.get(taskNumber - 1));
+                            Task task = listOfTasks.get(taskNumber - 1);
+                            boolean wasDone = task.isDone();
+                            task.markAsDone();
+                            if (saveTasks(listOfTasks)) {
+                                System.out.println("Nice! I've marked this task as done:");
+                                System.out.println(task);
+                            } else {
+                                restoreStatus(task, wasDone);
+                            }
                         }
 
                     } catch (NumberFormatException e) {
@@ -79,11 +82,15 @@ public class Unicorn {
                         if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
                             System.out.println("OOPS!!! That task number does not exist.");
                         } else {
-                            listOfTasks.get(taskNumber - 1).markAsUndone();
-                            Storage.save(listOfTasks);
-
-                            System.out.println("OK, I've marked this task as not done yet:");
-                            System.out.println(listOfTasks.get(taskNumber - 1));
+                            Task task = listOfTasks.get(taskNumber - 1);
+                            boolean wasDone = task.isDone();
+                            task.markAsUndone();
+                            if (saveTasks(listOfTasks)) {
+                                System.out.println("OK, I've marked this task as not done yet:");
+                                System.out.println(task);
+                            } else {
+                                restoreStatus(task, wasDone);
+                            }
                         }
 
                     } catch (NumberFormatException e) {
@@ -104,12 +111,14 @@ public class Unicorn {
                             System.out.println("OOPS!!! That task number does not exist.");
                         } else {
                             Task deletedTask = listOfTasks.remove(taskNumber - 1);
-                            Storage.save(listOfTasks);
-
-                            System.out.println("Noted. I've removed this task:");
-                            System.out.println("  " + deletedTask);
-                            System.out.println("Now you have "
-                                    + listOfTasks.size() + " tasks in the list.");
+                            if (saveTasks(listOfTasks)) {
+                                System.out.println("Noted. I've removed this task:");
+                                System.out.println("  " + deletedTask);
+                                System.out.println("Now you have "
+                                        + listOfTasks.size() + " tasks in the list.");
+                            } else {
+                                listOfTasks.add(taskNumber - 1, deletedTask);
+                            }
                         }
 
                     } catch (NumberFormatException e) {
@@ -184,16 +193,64 @@ public class Unicorn {
                     continue;
                 }
 
-                System.out.println("Got it. I've added this task:");
-                Storage.save(listOfTasks);
-                System.out.println("  " + listOfTasks.get(listOfTasks.size() - 1));
-                System.out.println("Now you have "
-                        + listOfTasks.size() + " tasks in the list.");
+                Task addedTask = listOfTasks.get(listOfTasks.size() - 1);
+                if (saveTasks(listOfTasks)) {
+                    System.out.println("Got it. I've added this task:");
+                    System.out.println("  " + addedTask);
+                    System.out.println("Now you have "
+                            + listOfTasks.size() + " tasks in the list.");
+                } else {
+                    listOfTasks.remove(listOfTasks.size() - 1);
+                }
             }
 
             input = scanner.nextLine();
         }
 
         System.out.println("Bye. Hope to see you again soon!");
+    }
+
+    /**
+     * Loads stored tasks while allowing the chatbot to start if the data cannot be used.
+     *
+     * @return loaded tasks, or an empty list when loading fails
+     */
+    private static ArrayList<Task> loadTasks() {
+        try {
+            return new ArrayList<>(Storage.load());
+        } catch (IOException | IllegalArgumentException e) {
+            System.out.println("OOPS!!! I could not load your saved tasks. Starting with an empty list.");
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Saves tasks and reports a failure without ending the chatbot.
+     *
+     * @param tasks tasks to save
+     * @return {@code true} when the tasks were saved successfully
+     */
+    private static boolean saveTasks(ArrayList<Task> tasks) {
+        try {
+            Storage.save(tasks);
+            return true;
+        } catch (IOException e) {
+            System.out.println("OOPS!!! I could not save your tasks. The change was not applied.");
+            return false;
+        }
+    }
+
+    /**
+     * Restores a task's completion state after a failed save.
+     *
+     * @param task task to restore
+     * @param wasDone completion state before the attempted change
+     */
+    private static void restoreStatus(Task task, boolean wasDone) {
+        if (wasDone) {
+            task.markAsDone();
+        } else {
+            task.markAsUndone();
+        }
     }
 }

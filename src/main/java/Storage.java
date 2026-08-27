@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,6 +42,7 @@ public class Storage {
      *
      * @return the saved tasks in their saved order, or an empty list for a first run
      * @throws IOException if an existing data file cannot be read
+     * @throws IllegalArgumentException if the data file contains invalid task data
      */
     public static List<Task> load() throws IOException {
         return load(DATA_FILE);
@@ -52,14 +54,21 @@ public class Storage {
      * @param dataFile file to read
      * @return saved tasks, or an empty list when the file does not yet exist
      * @throws IOException if an existing file cannot be read
+     * @throws IllegalArgumentException if the file contains invalid task data
      */
     static List<Task> load(Path dataFile) throws IOException {
         if (Files.notExists(dataFile)) {
             return List.of();
         }
-        return Files.readAllLines(dataFile).stream()
-                .map(Storage::toTask)
-                .toList();
+        List<Task> tasks = new ArrayList<>();
+        List<String> taskLines = Files.readAllLines(dataFile);
+        for (int lineNumber = 0; lineNumber < taskLines.size(); lineNumber++) {
+            String taskLine = taskLines.get(lineNumber);
+            if (!taskLine.isBlank()) {
+                tasks.add(toTask(taskLine, lineNumber + 1));
+            }
+        }
+        return tasks;
     }
 
     /**
@@ -71,12 +80,13 @@ public class Storage {
     private static String toFileString(Task task) {
         String completed = task.isDone ? "1" : "0";
         if (task instanceof TodoTask) {
-            return "T | " + completed + " | " + task.description;
+            return "T | " + completed + " | " + escapeField(task.description);
         } else if (task instanceof DeadlineTask deadlineTask) {
-            return "D | " + completed + " | " + task.description + " | " + deadlineTask.by;
+            return "D | " + completed + " | " + escapeField(task.description) + " | "
+                    + escapeField(deadlineTask.by);
         } else if (task instanceof EventTask eventTask) {
-            return "E | " + completed + " | " + task.description + " | "
-                    + eventTask.from + " | " + eventTask.to;
+            return "E | " + completed + " | " + escapeField(task.description) + " | "
+                    + escapeField(eventTask.from) + " | " + escapeField(eventTask.to);
         }
         throw new IllegalArgumentException("Unsupported task type");
     }
@@ -87,17 +97,89 @@ public class Storage {
      * @param taskLine task data read from the file
      * @return the task represented by the line
      */
-    private static Task toTask(String taskLine) {
-        String[] parts = taskLine.split(" \\| ");
-        Task task = switch (parts[0]) {
-        case "T" -> new TodoTask(parts[2]);
-        case "D" -> new DeadlineTask(parts[2], parts[3]);
-        case "E" -> new EventTask(parts[2], parts[3], parts[4]);
-        default -> throw new IllegalArgumentException("Unsupported task type");
-        };
+    private static Task toTask(String taskLine, int lineNumber) {
+        String[] parts = taskLine.split(" \\| ", -1);
+        if (parts.length < 2 || !(parts[1].equals("0") || parts[1].equals("1"))) {
+            throw invalidTaskData(lineNumber);
+        }
+
+        Task task;
+        switch (parts[0]) {
+        case "T":
+            if (parts.length != 3 || parts[2].isBlank()) {
+                throw invalidTaskData(lineNumber);
+            }
+            task = new TodoTask(unescapeField(parts[2], lineNumber));
+            break;
+        case "D":
+            if (parts.length != 4 || parts[2].isBlank()) {
+                throw invalidTaskData(lineNumber);
+            }
+            task = new DeadlineTask(
+                    unescapeField(parts[2], lineNumber), unescapeField(parts[3], lineNumber));
+            break;
+        case "E":
+            if (parts.length != 5 || parts[2].isBlank()) {
+                throw invalidTaskData(lineNumber);
+            }
+            task = new EventTask(unescapeField(parts[2], lineNumber),
+                    unescapeField(parts[3], lineNumber), unescapeField(parts[4], lineNumber));
+            break;
+        default:
+            throw invalidTaskData(lineNumber);
+        }
         if (parts[1].equals("1")) {
             task.markAsDone();
         }
         return task;
+    }
+
+    /**
+     * Creates a consistent error for malformed task data.
+     *
+     * @param lineNumber line containing invalid data
+     * @return error explaining which line could not be read
+     */
+    private static IllegalArgumentException invalidTaskData(int lineNumber) {
+        return new IllegalArgumentException("Invalid task data on line " + lineNumber + ".");
+    }
+
+    /**
+     * Escapes field characters that would otherwise be mistaken for separators.
+     *
+     * @param field task detail to escape
+     * @return an escaped storage field
+     */
+    private static String escapeField(String field) {
+        return field.replace("\\", "\\\\").replace("|", "\\|");
+    }
+
+    /**
+     * Restores an escaped storage field.
+     *
+     * @param field escaped field text
+     * @param lineNumber source line number for error reporting
+     * @return unescaped task detail
+     */
+    private static String unescapeField(String field, int lineNumber) {
+        StringBuilder result = new StringBuilder();
+        boolean escaped = false;
+        for (char character : field.toCharArray()) {
+            if (escaped) {
+                if (character != '\\' && character != '|') {
+                    throw invalidTaskData(lineNumber);
+                }
+                result.append(character);
+                escaped = false;
+            } else if (character == '\\') {
+                escaped = true;
+            } else {
+                result.append(character);
+            }
+        }
+        if (escaped) {
+            throw invalidTaskData(lineNumber);
+        }
+        return result.toString();
     }
 }

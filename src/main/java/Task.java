@@ -11,6 +11,15 @@ public class Task {
         return isDone ? "X" : " ";
     }
 
+    /**
+     * Reports whether this task is complete.
+     *
+     * @return {@code true} when the task is marked as done
+     */
+    public boolean isDone() {
+        return isDone;
+    }
+
     public void markAsDone() {
         isDone = true;
     }
