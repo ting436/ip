@@ -1,9 +1,19 @@
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
 
+/**
+ * Runs the Unicorn task chatbot.
+ */
 public class Unicorn {
-    public static void main(String[] args) {
+    /**
+     * Starts the chatbot and saves tasks after each successful list change.
+     *
+     * @param args command-line arguments, which are not used
+     * @throws IOException if the task data file cannot be saved
+     */
+    public static void main(String[] args) throws IOException {
         String banner = "          /\\\n"
                 + "         /  \\\n"
                 + "        / /\\ \\\n"
@@ -46,6 +56,7 @@ public class Unicorn {
                             System.out.println("OOPS!!! That task number does not exist.");
                         } else {
                             listOfTasks.get(taskNumber - 1).markAsDone();
+                            Storage.save(listOfTasks);
 
                             System.out.println("Nice! I've marked this task as done:");
                             System.out.println(listOfTasks.get(taskNumber - 1));
@@ -69,6 +80,7 @@ public class Unicorn {
                             System.out.println("OOPS!!! That task number does not exist.");
                         } else {
                             listOfTasks.get(taskNumber - 1).markAsUndone();
+                            Storage.save(listOfTasks);
 
                             System.out.println("OK, I've marked this task as not done yet:");
                             System.out.println(listOfTasks.get(taskNumber - 1));
@@ -92,6 +104,7 @@ public class Unicorn {
                             System.out.println("OOPS!!! That task number does not exist.");
                         } else {
                             Task deletedTask = listOfTasks.remove(taskNumber - 1);
+                            Storage.save(listOfTasks);
 
                             System.out.println("Noted. I've removed this task:");
                             System.out.println("  " + deletedTask);
@@ -172,6 +185,7 @@ public class Unicorn {
                 }
 
                 System.out.println("Got it. I've added this task:");
+                Storage.save(listOfTasks);
                 System.out.println("  " + listOfTasks.get(listOfTasks.size() - 1));
                 System.out.println("Now you have "
                         + listOfTasks.size() + " tasks in the list.");
