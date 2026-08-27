@@ -1,12 +1,14 @@
 package unicorn.task;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Checks the basic operations provided by {@link TaskList}.
@@ -32,5 +34,25 @@ public class TaskListTest {
         tasks.add(0, deletedTask);
         assertEquals(2, tasks.size(), "Adding at an index should restore a deleted task.");
         assertEquals(2, tasks.asList().size(), "The task snapshot should include all tasks.");
+    }
+
+    /**
+     * Verifies that snapshots cannot modify the task list and remain independent of its source list.
+     */
+    @Test
+    void asList_taskListChanges_snapshotIsImmutableAndIndependent() {
+        Task firstTask = new TodoTask("read book");
+        List<Task> sourceTasks = new ArrayList<>(List.of(firstTask));
+        TaskList tasks = new TaskList(sourceTasks);
+
+        sourceTasks.add(new TodoTask("write notes"));
+        List<Task> snapshot = tasks.asList();
+        tasks.add(new TodoTask("submit work"));
+
+        assertEquals(List.of(firstTask), snapshot,
+                "A snapshot should not change when the task list changes.");
+        assertThrows(UnsupportedOperationException.class,
+                () -> snapshot.add(new TodoTask("change snapshot")),
+                "A snapshot should not allow callers to change the task list.");
     }
 }

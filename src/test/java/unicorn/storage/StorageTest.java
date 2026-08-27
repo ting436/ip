@@ -69,6 +69,29 @@ public class StorageTest {
     }
 
     /**
+     * Verifies that escaped fields survive loading and blank data lines are ignored.
+     *
+     * @param testDirectory temporary directory supplied by JUnit for this test
+     * @throws IOException if the test data file cannot be written
+     */
+    @Test
+    void load_escapedFieldsAndBlankLines_taskDetailsAreRestored(@TempDir Path testDirectory) throws IOException {
+        Path dataFile = testDirectory.resolve("escaped.txt");
+        Files.write(dataFile, List.of(
+                "T | 0 | path \\\\ server\\|share",
+                "",
+                "E | 1 | planning\\|review | room\\\\two | 10\\|00"));
+
+        List<Task> loadedTasks = Storage.load(dataFile);
+
+        assertEquals(List.of(
+                "[T] [ ] path \\ server|share",
+                "[E] [X] planning|review (from: room\\two to: 10|00)"),
+                loadedTasks.stream().map(Task::toString).toList(),
+                "Escaped task details should be restored exactly.");
+    }
+
+    /**
      * Checks that malformed stored data is rejected with a clear exception.
      *
      * @param dataFile file containing invalid task data
