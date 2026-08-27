@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -27,7 +26,7 @@ public class Unicorn {
                 + "      ✨   ✨\n";
 
         Scanner scanner = new Scanner(System.in);
-        ArrayList<Task> listOfTasks = loadTasks();
+        TaskList listOfTasks = loadTasks();
 
         System.out.println(banner);
         System.out.println("Hello! I'm Unicorn.");
@@ -110,7 +109,7 @@ public class Unicorn {
                         if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
                             System.out.println("OOPS!!! That task number does not exist.");
                         } else {
-                            Task deletedTask = listOfTasks.remove(taskNumber - 1);
+                            Task deletedTask = listOfTasks.delete(taskNumber - 1);
                             if (saveTasks(listOfTasks)) {
                                 System.out.println("Noted. I've removed this task:");
                                 System.out.println("  " + deletedTask);
@@ -200,7 +199,7 @@ public class Unicorn {
                     System.out.println("Now you have "
                             + listOfTasks.size() + " tasks in the list.");
                 } else {
-                    listOfTasks.remove(listOfTasks.size() - 1);
+                    listOfTasks.delete(listOfTasks.size() - 1);
                 }
             }
 
@@ -215,12 +214,12 @@ public class Unicorn {
      *
      * @return loaded tasks, or an empty list when loading fails
      */
-    private static ArrayList<Task> loadTasks() {
+    private static TaskList loadTasks() {
         try {
-            return new ArrayList<>(Storage.load());
+            return new TaskList(Storage.load());
         } catch (IOException | IllegalArgumentException e) {
             System.out.println("OOPS!!! I could not load your saved tasks. Starting with an empty list.");
-            return new ArrayList<>();
+            return new TaskList();
         }
     }
 
@@ -230,9 +229,9 @@ public class Unicorn {
      * @param tasks tasks to save
      * @return {@code true} when the tasks were saved successfully
      */
-    private static boolean saveTasks(ArrayList<Task> tasks) {
+    private static boolean saveTasks(TaskList tasks) {
         try {
-            Storage.save(tasks);
+            Storage.save(tasks.asList());
             return true;
         } catch (IOException e) {
             System.out.println("OOPS!!! I could not save your tasks. The change was not applied.");
