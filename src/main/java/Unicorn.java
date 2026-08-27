@@ -8,10 +8,10 @@ import java.util.Scanner;
  */
 public class Unicorn {
     /**
-     * Starts the chatbot and saves tasks after each successful list change.
+     * Starts the chatbot, loading existing tasks and saving each successful list change.
      *
      * @param args command-line arguments, which are not used
-     * @throws IOException if the task data file cannot be saved
+     * @throws IOException if the task data file cannot be read or written
      */
     public static void main(String[] args) throws IOException {
         String banner = "          /\\\n"
@@ -28,7 +28,7 @@ public class Unicorn {
                 + "      ✨   ✨\n";
 
         Scanner scanner = new Scanner(System.in);
-        ArrayList<Task> listOfTasks = new ArrayList<>();
+        ArrayList<Task> listOfTasks = new ArrayList<>(Storage.load());
 
         System.out.println(banner);
         System.out.println("Hello! I'm Unicorn.");
