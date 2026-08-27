@@ -1,5 +1,6 @@
 package unicorn.task;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ public class TaskListTest {
      */
     public static void main(String[] args) {
         Task firstTask = new TodoTask("read book");
-        Task secondTask = new DeadlineTask("return book", "June 6th");
+        Task secondTask = new DeadlineTask("return book", LocalDateTime.of(2019, 12, 2, 18, 0));
         TaskList tasks = new TaskList(List.of(firstTask));
 
         tasks.add(secondTask);

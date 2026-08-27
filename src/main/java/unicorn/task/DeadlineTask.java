@@ -1,25 +1,84 @@
 package unicorn.task;
 
-public class DeadlineTask extends Task {
-    protected String by;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Locale;
 
-    public DeadlineTask(String description, String by) {
+/**
+ * Represents a task that must be completed by a date or date and time.
+ */
+public class DeadlineTask extends Task {
+    private static final DateTimeFormatter DATE_INPUT_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd");
+    private static final DateTimeFormatter DATE_TIME_INPUT_FORMAT =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm");
+    private static final DateTimeFormatter EXAMPLE_DATE_TIME_INPUT_FORMAT =
+            DateTimeFormatter.ofPattern("d/M/uuuu HHmm");
+    private static final DateTimeFormatter DATE_OUTPUT_FORMAT =
+            DateTimeFormatter.ofPattern("MMM dd uuuu", Locale.ENGLISH);
+    private static final DateTimeFormatter DATE_TIME_OUTPUT_FORMAT =
+            DateTimeFormatter.ofPattern("MMM dd uuuu h:mm a", Locale.ENGLISH);
+
+    private final LocalDateTime by;
+
+    /**
+     * Creates a deadline task.
+     *
+     * @param description task description
+     * @param by date and time by which the task is due
+     */
+    public DeadlineTask(String description, LocalDateTime by) {
         super(description);
         this.by = by;
     }
 
     /**
-     * Returns the deadline detail.
+     * Converts supported user input into a date and time. Date-only input is
+     * represented as the start of that day.
      *
-     * @return deadline detail
+     * @param dateTimeText date entered after {@code /by}
+     * @return parsed date and time
+     * @throws DateTimeParseException if the input does not match a supported format
      */
-    public String getBy() {
+    public static LocalDateTime parseBy(String dateTimeText) {
+        try {
+            return LocalDateTime.parse(dateTimeText, DATE_TIME_INPUT_FORMAT);
+        } catch (DateTimeParseException firstFormatException) {
+            try {
+                return LocalDateTime.parse(dateTimeText, EXAMPLE_DATE_TIME_INPUT_FORMAT);
+            } catch (DateTimeParseException exampleFormatException) {
+                LocalDate date = LocalDate.parse(dateTimeText, DATE_INPUT_FORMAT);
+                return date.atStartOfDay();
+            }
+        }
+    }
+
+    /**
+     * Returns the deadline date and time.
+     *
+     * @return deadline date and time
+     */
+    public LocalDateTime getBy() {
         return by;
     }
 
     @Override
     public String toString() {
         return "[D] [" + getStatusIcon() + "] "
-                + description + " (by: " + by + ")";
+                + description + " (by: " + formatBy() + ")";
+    }
+
+    /**
+     * Formats a deadline for the task list.
+     *
+     * @return formatted deadline
+     */
+    private String formatBy() {
+        if (by.toLocalTime().equals(LocalTime.MIDNIGHT)) {
+            return by.format(DATE_OUTPUT_FORMAT);
+        }
+        return by.format(DATE_TIME_OUTPUT_FORMAT);
     }
 }

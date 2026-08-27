@@ -146,15 +146,23 @@ public class Unicorn {
                         continue;
                     }
 
-                    String by = "";
-
                     if (input.contains(" /by ")) {
                         int byIndex = input.indexOf(" /by ");
                         description = input.substring(9, byIndex);
-                        by = input.substring(byIndex + 5);
+                        String by = input.substring(byIndex + 5);
+                        try {
+                            listOfTasks.add(new DeadlineTask(description, DeadlineTask.parseBy(by)));
+                        } catch (java.time.format.DateTimeParseException e) {
+                            ui.showError("OOPS!!! Please use yyyy-MM-dd, yyyy-MM-dd HHmm, "
+                                    + "or d/M/yyyy HHmm for deadlines.");
+                            input = ui.readCommand();
+                            continue;
+                        }
+                    } else {
+                        ui.showError("OOPS!!! A deadline needs a /by date.");
+                        input = ui.readCommand();
+                        continue;
                     }
-
-                    listOfTasks.add(new DeadlineTask(description, by));
 
                 } else if (input.startsWith("event ")) {
                     String description = input.substring(6);

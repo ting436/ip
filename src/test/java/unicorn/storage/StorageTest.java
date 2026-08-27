@@ -3,6 +3,7 @@ package unicorn.storage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import unicorn.task.DeadlineTask;
@@ -31,21 +32,21 @@ public class StorageTest {
         completedTodo.markAsDone();
         List<Task> tasks = List.of(
                 completedTodo,
-                new DeadlineTask("return book", "June 6th"),
+                new DeadlineTask("return book", LocalDateTime.of(2019, 12, 2, 18, 0)),
                 new EventTask("project meeting", "Aug 6th", "2-4pm"));
 
         Storage.save(dataFile, tasks);
 
         List<String> expectedFileLines = List.of(
                 "T | 1 | read \\| book",
-                "D | 0 | return book | June 6th",
+                "D | 0 | return book | 2019-12-02T18:00:00",
                 "E | 0 | project meeting | Aug 6th | 2-4pm");
         List<String> actualFileLines = Files.readAllLines(dataFile);
         assertEqual(expectedFileLines, actualFileLines, "Saved task data did not match.");
 
         List<String> expectedTaskLines = List.of(
                 "[T] [X] read | book",
-                "[D] [ ] return book (by: June 6th)",
+                "[D] [ ] return book (by: Dec 02 2019 6:00 PM)",
                 "[E] [ ] project meeting (from: Aug 6th to: 2-4pm)");
         List<String> loadedTaskLines = Storage.load(dataFile).stream()
                 .map(Task::toString)

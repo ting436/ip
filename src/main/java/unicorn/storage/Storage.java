@@ -3,6 +3,9 @@ package unicorn.storage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,7 +93,7 @@ public class Storage {
             return "T | " + completed + " | " + escapeField(task.getDescription());
         } else if (task instanceof DeadlineTask deadlineTask) {
             return "D | " + completed + " | " + escapeField(task.getDescription()) + " | "
-                    + escapeField(deadlineTask.getBy());
+                    + escapeField(deadlineTask.getBy().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         } else if (task instanceof EventTask eventTask) {
             return "E | " + completed + " | " + escapeField(task.getDescription()) + " | "
                     + escapeField(eventTask.getFrom()) + " | " + escapeField(eventTask.getTo());
@@ -122,8 +125,8 @@ public class Storage {
             if (parts.length != 4 || parts[2].isBlank()) {
                 throw invalidTaskData(lineNumber);
             }
-            task = new DeadlineTask(
-                    unescapeField(parts[2], lineNumber), unescapeField(parts[3], lineNumber));
+            task = new DeadlineTask(unescapeField(parts[2], lineNumber),
+                    parseDeadline(parts[3], lineNumber));
             break;
         case "E":
             if (parts.length != 5 || parts[2].isBlank()) {
@@ -149,6 +152,21 @@ public class Storage {
      */
     private static IllegalArgumentException invalidTaskData(int lineNumber) {
         return new IllegalArgumentException("Invalid task data on line " + lineNumber + ".");
+    }
+
+    /**
+     * Parses a deadline stored in ISO-8601 format.
+     *
+     * @param deadlineText stored deadline text
+     * @param lineNumber source line number
+     * @return parsed deadline date and time
+     */
+    private static LocalDateTime parseDeadline(String deadlineText, int lineNumber) {
+        try {
+            return LocalDateTime.parse(unescapeField(deadlineText, lineNumber));
+        } catch (DateTimeParseException e) {
+            throw invalidTaskData(lineNumber);
+        }
     }
 
     /**
