@@ -37,7 +37,8 @@ test {
 }
 
 application {
-    mainClass = 'seedu.duke.Duke'
+    // The application's main method is in the Unicorn class in this project.
+    mainClass = 'unicorn.Unicorn'
 }
 
 jar {

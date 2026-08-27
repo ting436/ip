@@ -6,23 +6,29 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import unicorn.task.DeadlineTask;
 import unicorn.task.EventTask;
 import unicorn.task.Task;
 import unicorn.task.TodoTask;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Checks that task storage saves and reloads all supported task types.
  */
 public class StorageTest {
     /**
-     * Runs the storage checks without requiring an external test library.
+     * Verifies that all task types can be saved, restored, and validated.
      *
-     * @param args command-line arguments, which are not used
-     * @throws IOException if a storage operation fails
+     * @param testDirectory temporary directory supplied by JUnit for this test
+     * @throws IOException if the temporary files cannot be read or written
      */
-    public static void main(String[] args) throws IOException {
-        Path testDirectory = Files.createTempDirectory("unicorn-storage-test");
+    @Test
+    void storageRoundTripAndErrorsWork(@TempDir Path testDirectory) throws IOException {
         Path dataFile = testDirectory.resolve("duke.txt");
         if (!Storage.load(dataFile).isEmpty()) {
             throw new AssertionError("A first run should have no tasks.");
@@ -42,7 +48,7 @@ public class StorageTest {
                 "D | 0 | return book | 2019-12-02T18:00:00",
                 "E | 0 | project meeting | Aug 6th | 2-4pm");
         List<String> actualFileLines = Files.readAllLines(dataFile);
-        assertEqual(expectedFileLines, actualFileLines, "Saved task data did not match.");
+        assertEquals(expectedFileLines, actualFileLines, "Saved task data did not match.");
 
         List<String> expectedTaskLines = List.of(
                 "[T] [X] read | book",
@@ -51,7 +57,7 @@ public class StorageTest {
         List<String> loadedTaskLines = Storage.load(dataFile).stream()
                 .map(Task::toString)
                 .toList();
-        assertEqual(expectedTaskLines, loadedTaskLines, "Loaded task data did not match.");
+        assertEquals(expectedTaskLines, loadedTaskLines, "Loaded task data did not match.");
 
         Path invalidDataFile = testDirectory.resolve("invalid.txt");
         Files.writeString(invalidDataFile, "D | 2 | return book | June 6th");
@@ -63,31 +69,14 @@ public class StorageTest {
     }
 
     /**
-     * Throws an error when two test values differ.
-     *
-     * @param expected expected value
-     * @param actual actual value
-     * @param message failure explanation
-     */
-    private static void assertEqual(List<String> expected, List<String> actual, String message) {
-        if (!expected.equals(actual)) {
-            throw new AssertionError(message);
-        }
-    }
-
-    /**
      * Checks that malformed stored data is rejected with a clear exception.
      *
      * @param dataFile file containing invalid task data
      * @throws IOException if the test cannot read the test file
      */
     private static void assertInvalidTaskData(Path dataFile) throws IOException {
-        try {
-            Storage.load(dataFile);
-            throw new AssertionError("Invalid task data should not be loaded.");
-        } catch (IllegalArgumentException e) {
-            // Expected: the data file has an invalid completion status.
-        }
+        assertThrows(IllegalArgumentException.class, () -> Storage.load(dataFile),
+                "Invalid task data should not be loaded.");
     }
 
     /**
@@ -97,11 +86,7 @@ public class StorageTest {
      * @param tasks tasks to attempt to save
      */
     private static void assertSaveFails(Path dataFile, List<Task> tasks) {
-        try {
-            Storage.save(dataFile, tasks);
-            throw new AssertionError("Saving to an invalid location should fail.");
-        } catch (IOException e) {
-            // Expected: a file cannot also be used as a parent directory.
-        }
+        assertThrows(IOException.class, () -> Storage.save(dataFile, tasks),
+                "A file cannot also be used as a parent directory.");
     }
 }
