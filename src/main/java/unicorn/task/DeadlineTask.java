@@ -64,6 +64,11 @@ public class DeadlineTask extends Task {
         return by;
     }
 
+    /**
+     * Returns a display representation of this deadline task.
+     *
+     * @return task status, description, and formatted deadline
+     */
     @Override
     public String toString() {
         return "[D] [" + getStatusIcon() + "] "
