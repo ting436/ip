@@ -38,3 +38,8 @@ Use lightweight tags unless the user requests an annotated tag.
 When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.
 
+## Java coding standard
+
+For every Java production or test-code change and every Java code review, read and follow the project skill at
+"'`skills/seedu-java-coding-standard/SKILL.md`. This requirement applies to all code in this repository.
+
