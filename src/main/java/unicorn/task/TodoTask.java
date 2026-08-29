@@ -1,11 +1,11 @@
 package unicorn.task;
 
 /**
- * Represents a task without a date or event period.
+ * Represents a task without a date or time detail.
  */
 public class TodoTask extends Task {
     /**
-     * Creates a to-do task.
+     * Creates a todo task.
      *
      * @param description task description
      */

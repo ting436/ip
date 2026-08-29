@@ -6,6 +6,9 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -13,9 +16,6 @@ import unicorn.task.DeadlineTask;
 import unicorn.task.EventTask;
 import unicorn.task.Task;
 import unicorn.task.TodoTask;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Checks that task storage saves and reloads all supported task types.

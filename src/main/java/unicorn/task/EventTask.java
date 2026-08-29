@@ -1,7 +1,7 @@
 package unicorn.task;
 
 /**
- * Represents a task that takes place over a stated period.
+ * Represents a task scheduled from one time detail to another.
  */
 public class EventTask extends Task {
     /** Detail describing when the event starts. */
