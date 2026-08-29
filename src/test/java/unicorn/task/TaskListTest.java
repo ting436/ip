@@ -55,4 +55,23 @@ public class TaskListTest {
                 () -> snapshot.add(new TodoTask("change snapshot")),
                 "A snapshot should not allow callers to change the task list.");
     }
+
+    /**
+     * Verifies that searches ignore case and return only matching descriptions in list order.
+     */
+    @Test
+    void find_keywordMatchesDescriptionsIgnoringCase() {
+        Task firstMatch = new TodoTask("Read Book");
+        Task nonMatch = new TodoTask("write notes");
+        Task secondMatch = new DeadlineTask("return book", LocalDateTime.of(2019, 12, 2, 18, 0));
+        TaskList tasks = new TaskList(List.of(firstMatch, nonMatch, secondMatch));
+
+        assertEquals(List.of(firstMatch, secondMatch), tasks.find("BOOK"),
+                "Find should return every description containing the keyword in list order.");
+        assertEquals(List.of(), tasks.find("meeting"),
+                "Find should return an empty list when no descriptions match.");
+        assertThrows(UnsupportedOperationException.class,
+                () -> tasks.find("book").add(new TodoTask("another book")),
+                "Find results should not allow callers to modify the task list.");
+    }
 }

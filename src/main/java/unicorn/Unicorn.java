@@ -46,6 +46,15 @@ public class Unicorn {
             if (Objects.equals(input, "list")) {
                 ui.showTaskList(listOfTasks);
 
+            } else if (input.startsWith("find ")) {
+                String keyword = input.substring(5);
+
+                if (keyword.isBlank()) {
+                    ui.showError("OOPS!!! Please specify a keyword to find.");
+                } else {
+                    ui.showMatchingTasks(listOfTasks.find(keyword));
+                }
+
             } else if (input.startsWith("mark ")) {
                 String argument = input.substring(5);
 

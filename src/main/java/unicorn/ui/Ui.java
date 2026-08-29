@@ -1,6 +1,7 @@
 package unicorn.ui;
 
 import java.util.Scanner;
+import java.util.List;
 
 import unicorn.task.Task;
 import unicorn.task.TaskList;
@@ -46,6 +47,18 @@ public class Ui {
     public void showTaskList(TaskList tasks) {
         for (int index = 0; index < tasks.size(); index++) {
             System.out.println((index + 1) + ": " + tasks.get(index));
+        }
+    }
+
+    /**
+     * Displays tasks whose descriptions match a search keyword.
+     *
+     * @param matchingTasks tasks that match the user's search
+     */
+    public void showMatchingTasks(List<Task> matchingTasks) {
+        System.out.println("Here are the matching tasks in your list:");
+        for (int index = 0; index < matchingTasks.size(); index++) {
+            System.out.println((index + 1) + "." + matchingTasks.get(index));
         }
     }
 
@@ -108,7 +121,7 @@ public class Ui {
     public void showHelp() {
         System.out.println(
                 "I don't understand that command. You may add tasks by specifying todo, "
-                        + "event, or deadline at the start, or view your tasks by entering 'list'. "
+                        + "event, or deadline at the start, or view your tasks by entering 'list' or 'find'. "
                         + "You may also mark, unmark, or delete your tasks by specifying "
                         + "'mark', 'unmark', or 'delete' followed by the index of the task.");
     }

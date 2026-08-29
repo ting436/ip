@@ -65,6 +65,25 @@ public class TaskList {
     }
 
     /**
+     * Finds tasks whose descriptions contain a keyword, ignoring letter case.
+     *
+     * @param keyword text to search for in task descriptions
+     * @return matching tasks in their original list order
+     */
+    public List<Task> find(String keyword) {
+        String normalizedKeyword = keyword.toLowerCase();
+        List<Task> matchingTasks = new ArrayList<>();
+
+        for (Task task : tasks) {
+            if (task.getDescription().toLowerCase().contains(normalizedKeyword)) {
+                matchingTasks.add(task);
+            }
+        }
+
+        return List.copyOf(matchingTasks);
+    }
+
+    /**
      * Returns the number of tasks in the list.
      *
      * @return task count
