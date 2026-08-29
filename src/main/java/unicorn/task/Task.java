@@ -1,14 +1,27 @@
 package unicorn.task;
 
+/**
+ * Represents a task with a description and completion status.
+ */
 public class Task {
     protected String description;
     protected boolean isDone;
 
+    /**
+     * Creates an incomplete task with a description.
+     *
+     * @param description task description
+     */
     public Task(String description) {
         this.description = description;
         this.isDone = false;
     }
 
+    /**
+     * Returns the icon representing this task's completion status.
+     *
+     * @return {@code X} when complete, or a space otherwise
+     */
     public String getStatusIcon() {
         return isDone ? "X" : " ";
     }
@@ -31,10 +44,16 @@ public class Task {
         return description;
     }
 
+    /**
+     * Marks this task as complete.
+     */
     public void markAsDone() {
         isDone = true;
     }
 
+    /**
+     * Marks this task as incomplete.
+     */
     public void markAsUndone() {
         isDone = false;
     }
