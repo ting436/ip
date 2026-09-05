@@ -53,9 +53,10 @@ public class MainWindow extends AnchorPane {
             return;
         }
         String response = unicorn.getResponse(input);
+        String commandType = unicorn.getCommandType();
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input, userImage),
-                DialogBox.getDukeDialog(response, unicornImage)
+                DialogBox.getUnicornDialog(response, unicornImage, commandType)
         );
         userInput.clear();
         if (input.equals("bye")) {

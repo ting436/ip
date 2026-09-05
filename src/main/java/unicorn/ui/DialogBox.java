@@ -67,9 +67,27 @@ public class DialogBox extends HBox {
      * @param image Unicorn's display image
      * @return dialog box aligned for Unicorn
      */
-    public static DialogBox getDukeDialog(String text, Image image) {
+    public static DialogBox getUnicornDialog(String text, Image image, String commandType) {
         DialogBox dialogBox = new DialogBox(text, image);
         dialogBox.flip();
+        dialogBox.changeDialogStyle(commandType);
         return dialogBox;
     }
+
+    private void changeDialogStyle(String commandType) {
+        switch(commandType) {
+            case "todo", "event", "deadline":
+                dialog.getStyleClass().add("add-label");
+                break;
+            case "mark", "unmark":
+                dialog.getStyleClass().add("marked-label");
+                break;
+            case "delete":
+                dialog.getStyleClass().add("delete-label");
+                break;
+            default:
+                // Do nothing
+        }
+    }
+
 }

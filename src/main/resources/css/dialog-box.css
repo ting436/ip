@@ -25,6 +25,18 @@
     -fx-text-fill: #4A2932;
 }
 
+.add-label {
+    -fx-background-color: lightyellow;
+}
+
+.marked-label {
+    -fx-background-color: palegreen;
+}
+
+.delete-label {
+    -fx-background-color: #F8A5A5;
+}
+
 /* Display picture */
 #displayPicture {
     -fx-effect: dropshadow(

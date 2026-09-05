@@ -22,6 +22,7 @@ public class Unicorn {
 
     private final TaskList tasks;
     private final TaskSaver taskSaver;
+    private String commandType;
 
     /**
      * Creates a chatbot using tasks loaded from the default data file.
@@ -52,6 +53,7 @@ public class Unicorn {
      */
     public String getResponse(String input) {
         assert input != null : "Input must not be null";
+        commandType = input.split(" ")[0];
 
         if (input.equals("list")) {
             return formatTasks(tasks.asList());
@@ -73,6 +75,10 @@ public class Unicorn {
             return "Bye. Hope to see you again soon!";
         }
         return HELP_MESSAGE;
+    }
+
+    public String getCommandType() {
+        return commandType;
     }
 
     private String findTasks(String keyword) {
