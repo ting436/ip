@@ -268,4 +268,11 @@ public class Unicorn {
             task.markAsUndone();
         }
     }
+
+    /**
+     * Generates a response for the user's chat message.
+     */
+    public String getResponse(String input) {
+        return "Unicorn heard: " + input;
+    }
 }

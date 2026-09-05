@@ -26,6 +26,7 @@ public class Main extends Application {
 
     private Image userImage = new Image(this.getClass().getResourceAsStream("/images/User.png"));
     private Image unicornImage = new Image(this.getClass().getResourceAsStream("/images/Unicorn.png"));
+    private Unicorn unicorn = new Unicorn();
 
     @Override
     public void start(Stage stage) {
@@ -88,7 +89,12 @@ public class Main extends Application {
      * the dialog container. Clears the user input after processing.
      */
     private void handleUserInput() {
-        dialogContainer.getChildren().addAll(new DialogBox(userInput.getText(), userImage));
+        String userText = userInput.getText();
+        String dukeText = unicorn.getResponse(userInput.getText());
+        dialogContainer.getChildren().addAll(
+                new DialogBox(userText, userImage),
+                new DialogBox(dukeText, unicornImage)
+        );
         userInput.clear();
     }
 }
