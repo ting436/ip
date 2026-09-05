@@ -115,28 +115,28 @@ public class Storage {
 
         Task task;
         switch (parts[0]) {
-        case "T":
-            if (parts.length != 3 || parts[2].isBlank()) {
+            case "T":
+                if (parts.length != 3 || parts[2].isBlank()) {
+                    throw invalidTaskData(lineNumber);
+                }
+                task = new TodoTask(unescapeField(parts[2], lineNumber));
+                break;
+            case "D":
+                if (parts.length != 4 || parts[2].isBlank()) {
+                    throw invalidTaskData(lineNumber);
+                }
+                task = new DeadlineTask(unescapeField(parts[2], lineNumber),
+                        parseDeadline(parts[3], lineNumber));
+                break;
+            case "E":
+                if (parts.length != 5 || parts[2].isBlank()) {
+                    throw invalidTaskData(lineNumber);
+                }
+                task = new EventTask(unescapeField(parts[2], lineNumber),
+                        unescapeField(parts[3], lineNumber), unescapeField(parts[4], lineNumber));
+                break;
+            default:
                 throw invalidTaskData(lineNumber);
-            }
-            task = new TodoTask(unescapeField(parts[2], lineNumber));
-            break;
-        case "D":
-            if (parts.length != 4 || parts[2].isBlank()) {
-                throw invalidTaskData(lineNumber);
-            }
-            task = new DeadlineTask(unescapeField(parts[2], lineNumber),
-                    parseDeadline(parts[3], lineNumber));
-            break;
-        case "E":
-            if (parts.length != 5 || parts[2].isBlank()) {
-                throw invalidTaskData(lineNumber);
-            }
-            task = new EventTask(unescapeField(parts[2], lineNumber),
-                    unescapeField(parts[3], lineNumber), unescapeField(parts[4], lineNumber));
-            break;
-        default:
-            throw invalidTaskData(lineNumber);
         }
         if (parts[1].equals("1")) {
             task.markAsDone();

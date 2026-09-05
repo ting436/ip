@@ -1,7 +1,7 @@
 package unicorn.ui;
 
-import java.util.Scanner;
 import java.util.List;
+import java.util.Scanner;
 
 import unicorn.task.Task;
 import unicorn.task.TaskList;

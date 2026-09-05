@@ -1,12 +1,12 @@
 package unicorn.task;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -51,8 +51,8 @@ public class TaskListTest {
 
         assertEquals(List.of(firstTask), snapshot,
                 "A snapshot should not change when the task list changes.");
-        assertThrows(UnsupportedOperationException.class,
-                () -> snapshot.add(new TodoTask("change snapshot")),
+        assertThrows(UnsupportedOperationException.class, () ->
+                snapshot.add(new TodoTask("change snapshot")),
                 "A snapshot should not allow callers to change the task list.");
     }
 
@@ -70,8 +70,8 @@ public class TaskListTest {
                 "Find should return every description containing the keyword in list order.");
         assertEquals(List.of(), tasks.find("meeting"),
                 "Find should return an empty list when no descriptions match.");
-        assertThrows(UnsupportedOperationException.class,
-                () -> tasks.find("book").add(new TodoTask("another book")),
+        assertThrows(UnsupportedOperationException.class, () ->
+                tasks.find("book").add(new TodoTask("another book")),
                 "Find results should not allow callers to modify the task list.");
     }
 
