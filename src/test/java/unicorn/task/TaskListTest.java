@@ -68,6 +68,8 @@ public class TaskListTest {
 
         assertEquals(List.of(firstMatch, secondMatch), tasks.find("BOOK"),
                 "Find should return every description containing the keyword in list order.");
+        assertEquals(List.of(nonMatch), tasks.find("NOTES"),
+                "Find should match a task regardless of the keyword's letter case.");
         assertEquals(List.of(), tasks.find("meeting"),
                 "Find should return an empty list when no descriptions match.");
         assertThrows(UnsupportedOperationException.class, () ->
