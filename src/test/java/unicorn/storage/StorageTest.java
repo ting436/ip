@@ -29,7 +29,7 @@ public class StorageTest {
      */
     @Test
     void storageRoundTripAndErrorsWork(@TempDir Path testDirectory) throws IOException {
-        Path dataFile = testDirectory.resolve("duke.txt");
+        Path dataFile = testDirectory.resolve("unicorn.txt");
         if (!Storage.load(dataFile).isEmpty()) {
             throw new AssertionError("A first run should have no tasks.");
         }
@@ -65,7 +65,7 @@ public class StorageTest {
 
         Path invalidDirectory = testDirectory.resolve("not-a-directory");
         Files.writeString(invalidDirectory, "This is a file, not a directory.");
-        assertSaveFails(invalidDirectory.resolve("duke.txt"), tasks);
+        assertSaveFails(invalidDirectory.resolve("unicorn.txt"), tasks);
     }
 
     /**

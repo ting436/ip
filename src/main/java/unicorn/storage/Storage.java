@@ -18,10 +18,10 @@ import unicorn.task.TodoTask;
  * Saves and loads the application's task data.
  */
 public class Storage {
-    private static final Path DATA_FILE = Path.of("data", "duke.txt");
+    private static final Path DATA_FILE = Path.of("data", "unicorn.txt");
 
     /**
-     * Writes one task per line to {@code ./data/duke.txt}.
+     * Writes one task per line to {@code ./data/unicorn.txt}.
      *
      * @param tasks tasks to save
      * @throws IOException if the data directory or file cannot be written
@@ -47,7 +47,7 @@ public class Storage {
     }
 
     /**
-     * Loads tasks from {@code ./data/duke.txt}. A first-time user has no data file,
+     * Loads tasks from {@code ./data/unicorn.txt}. A first-time user has no data file,
      * so an empty task list is returned in that case.
      *
      * @return the saved tasks in their saved order, or an empty list for a first run

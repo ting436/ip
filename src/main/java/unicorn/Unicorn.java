@@ -1,7 +1,8 @@
 package unicorn;
 
 import java.io.IOException;
-import java.util.Objects;
+import java.time.format.DateTimeParseException;
+import java.util.List;
 
 import unicorn.storage.Storage;
 import unicorn.task.DeadlineTask;
@@ -9,258 +10,229 @@ import unicorn.task.EventTask;
 import unicorn.task.Task;
 import unicorn.task.TaskList;
 import unicorn.task.TodoTask;
-import unicorn.ui.Ui;
 
 /**
- * Runs the Unicorn task chatbot.
+ * Processes commands for the Unicorn task chatbot.
  */
 public class Unicorn {
+    private static final String HELP_MESSAGE = "I don't understand that command. You may add tasks by specifying "
+            + "todo, event, or deadline at the start, or view your tasks by entering 'list' or 'find'. "
+            + "You may also mark, unmark, or delete your tasks by specifying "
+            + "'mark', 'unmark', or 'delete' followed by the index of the task.";
+
+    private final TaskList tasks;
+    private final TaskSaver taskSaver;
+
     /**
-     * Starts the chatbot, loading existing tasks and saving each successful list change.
-     *
-     * @param args command-line arguments, which are not used
+     * Creates a chatbot using tasks loaded from the default data file.
      */
-    public static void main(String[] args) {
-        String banner = "          /\\\n"
-                + "         /  \\\n"
-                + "        / /\\ \\\n"
-                + "       / /  \\ \\\n"
-                + "      /_/    \\_\\\n"
-                + "     (  ^  ^  )\n"
-                + "      \\  ♥  /\n"
-                + "       \\___/\n"
-                + "      /|   |\\\n"
-                + "     /_|___|_\\\n"
-                + "       /   \\\n"
-                + "      ✨   ✨\n";
-
-        Ui ui = new Ui();
-        TaskList listOfTasks = loadTasks(ui);
-
-        ui.showWelcome(banner);
-
-        String input = ui.readCommand();
-
-        while (!Objects.equals(input, "bye")) {
-
-            if (Objects.equals(input, "list")) {
-                ui.showTaskList(listOfTasks);
-
-            } else if (input.startsWith("find ")) {
-                String keyword = input.substring(5);
-
-                if (keyword.isBlank()) {
-                    ui.showError("OOPS!!! Please specify a keyword to find.");
-                } else {
-                    ui.showMatchingTasks(listOfTasks.find(keyword));
-                }
-
-            } else if (input.startsWith("mark ")) {
-                String argument = input.substring(5);
-
-                if (argument.isBlank()) {
-                    ui.showError("OOPS!!! Please specify a task number.");
-                } else {
-                    try {
-                        int taskNumber = Integer.parseInt(argument);
-
-                        if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
-                            ui.showError("OOPS!!! That task number does not exist.");
-                        } else {
-                            assert taskNumber - 1 >= 0 && taskNumber - 1 < listOfTasks.size()
-                                    : "Validated task number must map to an existing task";
-                            Task task = listOfTasks.get(taskNumber - 1);
-                            boolean wasDone = task.isDone();
-                            task.markAsDone();
-                            if (saveTasks(listOfTasks, ui)) {
-                                ui.showTaskMarked(task);
-                            } else {
-                                restoreStatus(task, wasDone);
-                            }
-                        }
-
-                    } catch (NumberFormatException e) {
-                        ui.showError("OOPS!!! Please provide a valid task number.");
-                    }
-                }
-
-            } else if (input.startsWith("unmark ")) {
-                String argument = input.substring(7);
-
-                if (argument.isBlank()) {
-                    ui.showError("OOPS!!! Please specify a task number.");
-                } else {
-                    try {
-                        int taskNumber = Integer.parseInt(argument);
-
-                        if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
-                            ui.showError("OOPS!!! That task number does not exist.");
-                        } else {
-                            assert taskNumber - 1 >= 0 && taskNumber - 1 < listOfTasks.size()
-                                    : "Validated task number must map to an existing task";
-                            Task task = listOfTasks.get(taskNumber - 1);
-                            boolean wasDone = task.isDone();
-                            task.markAsUndone();
-                            if (saveTasks(listOfTasks, ui)) {
-                                ui.showTaskUnmarked(task);
-                            } else {
-                                restoreStatus(task, wasDone);
-                            }
-                        }
-
-                    } catch (NumberFormatException e) {
-                        ui.showError("OOPS!!! Please provide a valid task number.");
-                    }
-                }
-
-            } else if (input.startsWith("delete ")) {
-                String argument = input.substring(7);
-
-                if (argument.isBlank()) {
-                    ui.showError("OOPS!!! Please specify a task number.");
-                } else {
-                    try {
-                        int taskNumber = Integer.parseInt(argument);
-
-                        if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
-                            ui.showError("OOPS!!! That task number does not exist.");
-                        } else {
-                            assert taskNumber - 1 >= 0 && taskNumber - 1 < listOfTasks.size()
-                                    : "Validated task number must map to an existing task";
-                            Task deletedTask = listOfTasks.delete(taskNumber - 1);
-                            if (saveTasks(listOfTasks, ui)) {
-                                ui.showTaskDeleted(deletedTask, listOfTasks.size());
-                            } else {
-                                listOfTasks.add(taskNumber - 1, deletedTask);
-                            }
-                        }
-
-                    } catch (NumberFormatException e) {
-                        ui.showError("OOPS!!! Please provide a valid task number.");
-                    }
-                }
-
-            } else {
-                if (input.startsWith("todo ")) {
-                    String description = input.substring(5);
-
-                    if (description.isBlank()) {
-                        ui.showError("OOPS!!! The description of a todo cannot be empty.");
-                        input = ui.readCommand();
-                        continue;
-                    }
-
-                    listOfTasks.add(new TodoTask(description));
-
-                } else if (input.startsWith("deadline ")) {
-                    String description = input.substring(9);
-
-                    if (description.isBlank()) {
-                        ui.showError("OOPS!!! The description of a deadline cannot be empty.");
-                        input = ui.readCommand();
-                        continue;
-                    }
-
-                    if (input.contains(" /by ")) {
-                        int byIndex = input.indexOf(" /by ");
-                        description = input.substring(9, byIndex);
-                        String by = input.substring(byIndex + 5);
-                        try {
-                            listOfTasks.add(new DeadlineTask(description, DeadlineTask.parseBy(by)));
-                        } catch (java.time.format.DateTimeParseException e) {
-                            ui.showError("OOPS!!! Please use yyyy-MM-dd, yyyy-MM-dd HHmm, "
-                                    + "or d/M/yyyy HHmm for deadlines.");
-                            input = ui.readCommand();
-                            continue;
-                        }
-                    } else {
-                        ui.showError("OOPS!!! A deadline needs a /by date.");
-                        input = ui.readCommand();
-                        continue;
-                    }
-
-                } else if (input.startsWith("event ")) {
-                    String description = input.substring(6);
-
-                    if (description.isBlank()) {
-                        ui.showError("OOPS!!! The description of an event cannot be empty.");
-                        input = ui.readCommand();
-                        continue;
-                    }
-
-                    String from = "";
-                    String to = "";
-
-                    if (input.contains(" /from ") && input.contains(" /to ")) {
-                        int fromIndex = input.indexOf(" /from ");
-                        int toIndex = input.indexOf(" /to ");
-
-                        description = input.substring(6, fromIndex);
-                        from = input.substring(fromIndex + 7, toIndex);
-                        to = input.substring(toIndex + 5);
-                    }
-
-                    listOfTasks.add(new EventTask(description, from, to));
-
-                } else {
-                    ui.showHelp();
-                    input = ui.readCommand();
-                    continue;
-                }
-
-                assert listOfTasks.size() > 0 : "Adding a task must leave the task list non-empty";
-                Task addedTask = listOfTasks.get(listOfTasks.size() - 1);
-                if (saveTasks(listOfTasks, ui)) {
-                    ui.showTaskAdded(addedTask, listOfTasks.size());
-                } else {
-                    listOfTasks.delete(listOfTasks.size() - 1);
-                }
-            }
-
-            input = ui.readCommand();
-        }
-
-        ui.showGoodbye();
+    public Unicorn() {
+        this(loadTasks(), Storage::save);
     }
 
     /**
-     * Loads stored tasks while allowing the chatbot to start if the data cannot be used.
+     * Creates a chatbot with supplied tasks and persistence behavior.
      *
-     * @param ui user interface used to show a loading error
-     * @return loaded tasks, or an empty list when loading fails
+     * @param tasks initial tasks managed by the chatbot
+     * @param taskSaver operation used to save task changes
      */
-    private static TaskList loadTasks(Ui ui) {
-        try {
-            return new TaskList(Storage.load());
-        } catch (IOException | IllegalArgumentException e) {
-            ui.showError("OOPS!!! I could not load your saved tasks. Starting with an empty list.");
-            return new TaskList();
-        }
+    Unicorn(TaskList tasks, TaskSaver taskSaver) {
+        assert tasks != null : "Task list must not be null";
+        assert taskSaver != null : "Task saver must not be null";
+
+        this.tasks = tasks;
+        this.taskSaver = taskSaver;
     }
 
     /**
-     * Saves tasks and reports a failure without ending the chatbot.
+     * Processes a user command and returns the chatbot's response.
      *
-     * @param tasks tasks to save
-     * @param ui user interface used to show a save error
-     * @return {@code true} when the tasks were saved successfully
+     * @param input command entered by the user
+     * @return response describing the command result
      */
-    private static boolean saveTasks(TaskList tasks, Ui ui) {
+    public String getResponse(String input) {
+        assert input != null : "Input must not be null";
+
+        if (input.equals("list")) {
+            return formatTasks(tasks.asList());
+        } else if (input.startsWith("find ")) {
+            return findTasks(input.substring(5));
+        } else if (input.startsWith("mark ")) {
+            return setTaskCompletion(input.substring(5), true);
+        } else if (input.startsWith("unmark ")) {
+            return setTaskCompletion(input.substring(7), false);
+        } else if (input.startsWith("delete ")) {
+            return deleteTask(input.substring(7));
+        } else if (input.startsWith("todo ")) {
+            return addTodo(input.substring(5));
+        } else if (input.startsWith("deadline ")) {
+            return addDeadline(input);
+        } else if (input.startsWith("event ")) {
+            return addEvent(input);
+        } else if (input.equals("bye")) {
+            return "Bye. Hope to see you again soon!";
+        }
+        return HELP_MESSAGE;
+    }
+
+    private String findTasks(String keyword) {
+        if (keyword.isBlank()) {
+            return "OOPS!!! Please specify a keyword to find.";
+        }
+        List<Task> matchingTasks = tasks.find(keyword);
+        return "Here are the matching tasks in your list:\n" + formatTasks(matchingTasks);
+    }
+
+    private String setTaskCompletion(String argument, boolean isDone) {
+        Task task = getTask(argument);
+        if (task == null) {
+            return getTaskNumberError(argument);
+        }
+
+        boolean wasDone = task.isDone();
+        if (isDone) {
+            task.markAsDone();
+        } else {
+            task.markAsUndone();
+        }
+
+        if (!saveTasks()) {
+            restoreStatus(task, wasDone);
+            return getSaveError();
+        }
+        if (isDone) {
+            return "Nice! I've marked this task as done:\n" + task;
+        }
+        return "OK, I've marked this task as not done yet:\n" + task;
+    }
+
+    private String deleteTask(String argument) {
+        Integer taskIndex = parseTaskIndex(argument);
+        if (taskIndex == null) {
+            return getTaskNumberError(argument);
+        }
+
+        Task deletedTask = tasks.delete(taskIndex);
+        if (!saveTasks()) {
+            tasks.add(taskIndex, deletedTask);
+            return getSaveError();
+        }
+        return "Noted. I've removed this task:\n  " + deletedTask
+                + "\nNow you have " + tasks.size() + " tasks in the list.";
+    }
+
+    private String addTodo(String description) {
+        if (description.isBlank()) {
+            return "OOPS!!! The description of a todo cannot be empty.";
+        }
+        return addTask(new TodoTask(description));
+    }
+
+    private String addDeadline(String input) {
+        int byIndex = input.indexOf(" /by ");
+        if (byIndex < 0) {
+            return "OOPS!!! A deadline needs a /by date.";
+        }
+
+        String description = input.substring(9, byIndex);
+        String by = input.substring(byIndex + 5);
+        if (description.isBlank()) {
+            return "OOPS!!! The description of a deadline cannot be empty.";
+        }
         try {
-            Storage.save(tasks.asList());
+            return addTask(new DeadlineTask(description, DeadlineTask.parseBy(by)));
+        } catch (DateTimeParseException e) {
+            return "OOPS!!! Please use yyyy-MM-dd, yyyy-MM-dd HHmm, "
+                    + "or d/M/yyyy HHmm for deadlines.";
+        }
+    }
+
+    private String addEvent(String input) {
+        int fromIndex = input.indexOf(" /from ");
+        int toIndex = input.indexOf(" /to ");
+        if (fromIndex < 0 || toIndex < fromIndex) {
+            return "OOPS!!! An event needs /from and /to details.";
+        }
+
+        String description = input.substring(6, fromIndex);
+        String from = input.substring(fromIndex + 7, toIndex);
+        String to = input.substring(toIndex + 5);
+        if (description.isBlank()) {
+            return "OOPS!!! The description of an event cannot be empty.";
+        }
+        return addTask(new EventTask(description, from, to));
+    }
+
+    private String addTask(Task task) {
+        tasks.add(task);
+        if (!saveTasks()) {
+            tasks.delete(tasks.size() - 1);
+            return getSaveError();
+        }
+        return "Got it. I've added this task:\n  " + task
+                + "\nNow you have " + tasks.size() + " tasks in the list.";
+    }
+
+    private Task getTask(String argument) {
+        Integer taskIndex = parseTaskIndex(argument);
+        return taskIndex == null ? null : tasks.get(taskIndex);
+    }
+
+    private Integer parseTaskIndex(String argument) {
+        if (argument.isBlank()) {
+            return null;
+        }
+        try {
+            int taskIndex = Integer.parseInt(argument) - 1;
+            return taskIndex >= 0 && taskIndex < tasks.size() ? taskIndex : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String getTaskNumberError(String argument) {
+        if (argument.isBlank()) {
+            return "OOPS!!! Please specify a task number.";
+        }
+        try {
+            Integer.parseInt(argument);
+            return "OOPS!!! That task number does not exist.";
+        } catch (NumberFormatException e) {
+            return "OOPS!!! Please provide a valid task number.";
+        }
+    }
+
+    private boolean saveTasks() {
+        try {
+            taskSaver.save(tasks.asList());
             return true;
         } catch (IOException e) {
-            ui.showError("OOPS!!! I could not save your tasks. The change was not applied.");
             return false;
         }
     }
 
-    /**
-     * Restores a task's completion state after a failed save.
-     *
-     * @param task task to restore
-     * @param wasDone completion state before the attempted change
-     */
+    private static TaskList loadTasks() {
+        try {
+            return new TaskList(Storage.load());
+        } catch (IOException | IllegalArgumentException e) {
+            return new TaskList();
+        }
+    }
+
+    private static String formatTasks(List<Task> tasks) {
+        if (tasks.isEmpty()) {
+            return "You have no tasks in your list.";
+        }
+        StringBuilder response = new StringBuilder();
+        for (int index = 0; index < tasks.size(); index++) {
+            if (index > 0) {
+                response.append('\n');
+            }
+            response.append(index + 1).append(". ").append(tasks.get(index));
+        }
+        return response.toString();
+    }
+
     private static void restoreStatus(Task task, boolean wasDone) {
         if (wasDone) {
             task.markAsDone();
@@ -269,10 +241,15 @@ public class Unicorn {
         }
     }
 
+    private static String getSaveError() {
+        return "OOPS!!! I could not save your tasks. The change was not applied.";
+    }
+
     /**
-     * Generates a response for the user's chat message.
+     * Saves the current tasks to persistent storage.
      */
-    public String getResponse(String input) {
-        return "Unicorn heard: " + input;
+    @FunctionalInterface
+    interface TaskSaver {
+        void save(List<Task> tasks) throws IOException;
     }
 }
