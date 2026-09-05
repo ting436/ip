@@ -67,6 +67,8 @@ public class Unicorn {
                         if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
                             ui.showError("OOPS!!! That task number does not exist.");
                         } else {
+                            assert taskNumber - 1 >= 0 && taskNumber - 1 < listOfTasks.size()
+                                    : "Validated task number must map to an existing task";
                             Task task = listOfTasks.get(taskNumber - 1);
                             boolean wasDone = task.isDone();
                             task.markAsDone();
@@ -94,6 +96,8 @@ public class Unicorn {
                         if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
                             ui.showError("OOPS!!! That task number does not exist.");
                         } else {
+                            assert taskNumber - 1 >= 0 && taskNumber - 1 < listOfTasks.size()
+                                    : "Validated task number must map to an existing task";
                             Task task = listOfTasks.get(taskNumber - 1);
                             boolean wasDone = task.isDone();
                             task.markAsUndone();
@@ -121,6 +125,8 @@ public class Unicorn {
                         if (taskNumber < 1 || taskNumber > listOfTasks.size()) {
                             ui.showError("OOPS!!! That task number does not exist.");
                         } else {
+                            assert taskNumber - 1 >= 0 && taskNumber - 1 < listOfTasks.size()
+                                    : "Validated task number must map to an existing task";
                             Task deletedTask = listOfTasks.delete(taskNumber - 1);
                             if (saveTasks(listOfTasks, ui)) {
                                 ui.showTaskDeleted(deletedTask, listOfTasks.size());
@@ -202,6 +208,7 @@ public class Unicorn {
                     continue;
                 }
 
+                assert listOfTasks.size() > 0 : "Adding a task must leave the task list non-empty";
                 Task addedTask = listOfTasks.get(listOfTasks.size() - 1);
                 if (saveTasks(listOfTasks, ui)) {
                     ui.showTaskAdded(addedTask, listOfTasks.size());
