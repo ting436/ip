@@ -90,10 +90,10 @@ public class Main extends Application {
      */
     private void handleUserInput() {
         String userText = userInput.getText();
-        String dukeText = unicorn.getResponse(userInput.getText());
+        String unicornText = unicorn.getResponse(userInput.getText());
         dialogContainer.getChildren().addAll(
-                new DialogBox(userText, userImage),
-                new DialogBox(dukeText, unicornImage)
+                DialogBox.getUserDialog(userText, userImage),
+                DialogBox.getDukeDialog(unicornText, unicornImage)
         );
         userInput.clear();
     }
