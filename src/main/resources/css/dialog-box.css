@@ -1,0 +1,42 @@
+/* User message */
+.label {
+    -fx-background-color: #F4A7B9;
+
+    -fx-border-color: #E98DA3;
+    -fx-border-width: 1px;
+
+    -fx-background-radius: 1em 1em 0 1em;
+    -fx-border-radius: 1em 1em 0 1em;
+
+    -fx-text-fill: #4A2932;
+    -fx-padding: 8px 12px;
+}
+
+/* Bot reply */
+.reply-label {
+    -fx-background-color: #FFE1E8;
+
+    -fx-border-color: #F4B6C2;
+    -fx-border-width: 1px;
+
+    -fx-background-radius: 1em 1em 1em 0;
+    -fx-border-radius: 1em 1em 1em 0;
+
+    -fx-text-fill: #4A2932;
+}
+
+/* Display picture */
+#displayPicture {
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(177, 105, 125, 0.20),
+            10,
+            0.4,
+            2,
+            3
+    );
+
+    -fx-scale-x: 1;
+    -fx-scale-y: 1;
+    -fx-rotate: 0;
+}
