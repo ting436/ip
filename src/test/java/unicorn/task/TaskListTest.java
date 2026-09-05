@@ -76,4 +76,22 @@ public class TaskListTest {
                 () -> tasks.find("book").add(new TodoTask("another book")),
                 "Find results should not allow callers to modify the task list.");
     }
+
+    /**
+     * Verifies that programmers cannot place null entries in a task list.
+     */
+    @Test
+    void constructorOrAdd_nullTask_assertionErrorThrown() {
+        List<Task> sourceTasks = new ArrayList<>();
+        sourceTasks.add(null);
+
+        assertThrows(AssertionError.class, () -> new TaskList(sourceTasks),
+                "A task list should reject a null entry from its source list.");
+
+        TaskList tasks = new TaskList();
+        assertThrows(AssertionError.class, () -> tasks.add(null),
+                "A task list should reject a null task appended to it.");
+        assertThrows(AssertionError.class, () -> tasks.add(0, null),
+                "A task list should reject a null task inserted into it.");
+    }
 }
