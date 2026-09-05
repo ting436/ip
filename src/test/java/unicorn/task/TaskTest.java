@@ -2,6 +2,7 @@ package unicorn.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,17 @@ public class TaskTest {
         assertFalse(task.isDone(), "A new task should not be complete.");
         assertEquals(" ", task.getStatusIcon(), "A new task should have an empty status icon.");
         assertEquals("[ ] read book", task.toString(), "A new task should use the incomplete display format.");
+    }
+
+    /**
+     * Verifies that programmers cannot create tasks without meaningful descriptions.
+     */
+    @Test
+    void constructor_nullOrBlankDescription_assertionErrorThrown() {
+        assertThrows(AssertionError.class, () -> new Task(null),
+                "A null task description violates the task invariant.");
+        assertThrows(AssertionError.class, () -> new Task("   "),
+                "A blank task description violates the task invariant.");
     }
 
     /**

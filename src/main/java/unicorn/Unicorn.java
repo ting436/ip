@@ -107,6 +107,8 @@ public class Unicorn {
                 return;
             }
 
+            assert taskNumber - 1 >= 0 && taskNumber - 1 < tasks.size()
+                    : "Validated task number must map to an existing task";
             Task task = tasks.get(taskNumber - 1);
             boolean wasDone = task.isDone();
             task.markAsDone();
@@ -136,6 +138,8 @@ public class Unicorn {
                 return;
             }
 
+            assert taskNumber - 1 >= 0 && taskNumber - 1 < tasks.size()
+                    : "Validated task number must map to an existing task";
             Task task = tasks.get(taskNumber - 1);
             boolean wasDone = task.isDone();
             task.markAsUndone();
@@ -165,6 +169,8 @@ public class Unicorn {
                 return;
             }
 
+            assert taskNumber - 1 >= 0 && taskNumber - 1 < tasks.size()
+                    : "Validated task number must map to an existing task";
             Task deletedTask = tasks.delete(taskNumber - 1);
             if (saveTasks(tasks, ui)) {
                 ui.showTaskDeleted(deletedTask, tasks.size());
@@ -193,6 +199,7 @@ public class Unicorn {
         }
 
         tasks.add(task);
+        assert tasks.size() > 0 : "Adding a task must leave the task list non-empty";
         if (saveTasks(tasks, ui)) {
             ui.showTaskAdded(task, tasks.size());
         } else {

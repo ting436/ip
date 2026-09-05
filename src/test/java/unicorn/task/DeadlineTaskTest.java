@@ -54,4 +54,13 @@ public class DeadlineTaskTest {
         assertEquals("[D] [ ] submit form (by: Oct 15 2019)", dateOnlyTask.toString(),
                 "A date-only deadline should not display a time.");
     }
+
+    /**
+     * Verifies that every deadline task has a deadline date and time.
+     */
+    @Test
+    void constructor_nullDeadline_assertionErrorThrown() {
+        assertThrows(AssertionError.class, () -> new DeadlineTask("return book", null),
+                "A missing deadline violates the deadline task invariant.");
+    }
 }
