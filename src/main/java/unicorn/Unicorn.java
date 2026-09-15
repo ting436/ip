@@ -15,6 +15,7 @@ import unicorn.task.TodoTask;
  * Processes commands for the Unicorn task chatbot.
  */
 public class Unicorn {
+    private static final String ERROR_COMMAND_TYPE = "error";
     private static final String HELP_MESSAGE = "That signal was unclear. Every great quest needs a map! "
             + "Add a quest with todo, event, or deadline; view quests with 'list' or 'find'; "
             + "or update them with 'mark', 'unmark', or 'delete' followed by the quest number.";
@@ -75,7 +76,7 @@ public class Unicorn {
         } else if (input.equals("bye")) {
             return "Keep shining! Prisma will be here when your next quest begins.";
         }
-        return HELP_MESSAGE;
+        return getErrorResponse(HELP_MESSAGE);
     }
 
     /**
@@ -87,13 +88,18 @@ public class Unicorn {
         return WELCOME_MESSAGE;
     }
 
+    /**
+     * Returns the type of the most recently processed command.
+     *
+     * @return command type used to style the chatbot's response
+     */
     public String getCommandType() {
         return commandType;
     }
 
     private String findTasks(String keyword) {
         if (keyword.isBlank()) {
-            return "My unicorn senses need a keyword before they can search.";
+            return getErrorResponse("My unicorn senses need a keyword before they can search.");
         }
         List<Task> matchingTasks = tasks.find(keyword);
         return "My unicorn senses found these matching quests:\n" + formatTasks(matchingTasks);
@@ -139,7 +145,7 @@ public class Unicorn {
 
     private String addTodo(String description) {
         if (description.isBlank()) {
-            return "A quest needs a description before I can weave it into the list.";
+            return getErrorResponse("A quest needs a description before I can weave it into the list.");
         }
         return addTask(new TodoTask(description));
     }
@@ -147,19 +153,19 @@ public class Unicorn {
     private String addDeadline(String input) {
         int byIndex = input.indexOf(" /by ");
         if (byIndex < 0) {
-            return "My foresight needs a /by date for that deadline quest.";
+            return getErrorResponse("My foresight needs a /by date for that deadline quest.");
         }
 
         String description = input.substring(9, byIndex);
         String by = input.substring(byIndex + 5);
         if (description.isBlank()) {
-            return "A deadline quest needs a description before I can save it.";
+            return getErrorResponse("A deadline quest needs a description before I can save it.");
         }
         try {
             return addTask(new DeadlineTask(description, DeadlineTask.parseBy(by)));
         } catch (DateTimeParseException e) {
-            return "A little time glitch! Please use yyyy-MM-dd, yyyy-MM-dd HHmm, "
-                    + "or d/M/yyyy HHmm for deadlines.";
+            return getErrorResponse("A little time glitch! Please use yyyy-MM-dd, yyyy-MM-dd HHmm, "
+                    + "or d/M/yyyy HHmm for deadlines.");
         }
     }
 
@@ -167,14 +173,14 @@ public class Unicorn {
         int fromIndex = input.indexOf(" /from ");
         int toIndex = input.indexOf(" /to ");
         if (fromIndex < 0 || toIndex < fromIndex) {
-            return "My event compass needs both /from and /to details.";
+            return getErrorResponse("My event compass needs both /from and /to details.");
         }
 
         String description = input.substring(6, fromIndex);
         String from = input.substring(fromIndex + 7, toIndex);
         String to = input.substring(toIndex + 5);
         if (description.isBlank()) {
-            return "An event quest needs a description before I can save it.";
+            return getErrorResponse("An event quest needs a description before I can save it.");
         }
         return addTask(new EventTask(description, from, to));
     }
@@ -208,14 +214,19 @@ public class Unicorn {
 
     private String getTaskNumberError(String argument) {
         if (argument.isBlank()) {
-            return "My quest compass needs a quest number.";
+            return getErrorResponse("My quest compass needs a quest number.");
         }
         try {
             Integer.parseInt(argument);
-            return "That quest number has not appeared in this realm yet.";
+            return getErrorResponse("That quest number has not appeared in this realm yet.");
         } catch (NumberFormatException e) {
-            return "That signal is not a valid quest number.";
+            return getErrorResponse("That signal is not a valid quest number.");
         }
+    }
+
+    private String getErrorResponse(String message) {
+        commandType = ERROR_COMMAND_TYPE;
+        return "⚠ " + message;
     }
 
     private boolean saveTasks() {
@@ -257,8 +268,10 @@ public class Unicorn {
         }
     }
 
-    private static String getSaveError() {
-        return "A little glitch disturbed the magic. I could not save your quests, so nothing changed.";
+    private String getSaveError() {
+        return getErrorResponse(
+                "A little glitch disturbed the magic. I could not save your quests, so nothing changed."
+        );
     }
 
     /**

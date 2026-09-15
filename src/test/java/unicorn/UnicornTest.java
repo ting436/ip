@@ -62,6 +62,20 @@ public class UnicornTest {
     }
 
     @Test
+    public void getResponse_invalidCommand_responseIsClassifiedAndMarkedAsError() {
+        String response = unicorn.getResponse("teleport home");
+
+        assertTrue(response.startsWith("⚠ "));
+        assertEquals("error", unicorn.getCommandType());
+
+        unicorn.getResponse("deadline report /by tomorrow");
+        assertEquals("error", unicorn.getCommandType());
+
+        unicorn.getResponse("todo read book");
+        assertEquals("todo", unicorn.getCommandType());
+    }
+
+    @Test
     public void getResponse_saveFails_changeIsRolledBack() {
         Unicorn failingUnicorn = new Unicorn(tasks, ignoredTasks -> {
             throw new IOException("Test save failure");

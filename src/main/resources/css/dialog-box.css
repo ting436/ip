@@ -34,6 +34,15 @@
     -fx-border-color: #FF789A;
 }
 
+.error-label {
+    -fx-background-color: linear-gradient(to bottom right, #FFF1C7, #FFC7D4);
+    -fx-border-color: #FF4778;
+    -fx-border-width: 2px;
+    -fx-text-fill: #65152D;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(255, 71, 120, 0.45), 12, 0.35, 0, 2);
+}
+
 #displayPicture {
     -fx-effect: dropshadow(
             gaussian,
