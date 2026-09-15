@@ -14,6 +14,9 @@ import unicorn.ui.MainWindow;
  * Displays the Unicorn graphical user interface using FXML.
  */
 public class Main extends Application {
+    private static final double MINIMUM_WINDOW_HEIGHT = 480;
+    private static final double MINIMUM_WINDOW_WIDTH = 380;
+
     private final Unicorn unicorn = new Unicorn();
 
     @Override
@@ -26,6 +29,8 @@ public class Main extends Application {
         stage.setScene(new Scene(mainLayout));
         stage.setTitle("Prisma — Wise Tech Unicorn");
         stage.getIcons().add(new Image(Main.class.getResourceAsStream("/images/Unicorn.png")));
+        stage.setMinHeight(MINIMUM_WINDOW_HEIGHT);
+        stage.setMinWidth(MINIMUM_WINDOW_WIDTH);
         stage.show();
     }
 }

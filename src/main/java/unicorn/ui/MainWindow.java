@@ -28,11 +28,6 @@ public class MainWindow extends AnchorPane {
     private final Image userImage = new Image(this.getClass().getResourceAsStream("/images/User.png"));
     private final Image unicornImage = new Image(this.getClass().getResourceAsStream("/images/Unicorn.png"));
 
-    @FXML
-    public void initialize() {
-        scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
-    }
-
     /**
      * Supplies the command processor used by this window.
      *
@@ -43,6 +38,7 @@ public class MainWindow extends AnchorPane {
         dialogContainer.getChildren().add(
                 DialogBox.getUnicornDialog(unicorn.getWelcomeMessage(), unicornImage, "welcome")
         );
+        scrollToLatestMessage();
     }
 
     /**
@@ -60,9 +56,14 @@ public class MainWindow extends AnchorPane {
                 DialogBox.getUserDialog(input, userImage),
                 DialogBox.getUnicornDialog(response, unicornImage, commandType)
         );
+        scrollToLatestMessage();
         userInput.clear();
         if (input.equals("bye")) {
             Platform.exit();
         }
+    }
+
+    private void scrollToLatestMessage() {
+        Platform.runLater(() -> scrollPane.setVvalue(scrollPane.getVmax()));
     }
 }
