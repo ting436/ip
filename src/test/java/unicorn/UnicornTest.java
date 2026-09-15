@@ -15,6 +15,13 @@ public class UnicornTest {
     private final Unicorn unicorn = new Unicorn(tasks, ignoredTasks -> { });
 
     @Test
+    public void getWelcomeMessage_returnsPrismaIntroduction() {
+        assertEquals("Hello! I'm Prisma, your wise tech unicorn. "
+                        + "Tell me what is on your quest list, and we'll make some magic.",
+                unicorn.getWelcomeMessage());
+    }
+
+    @Test
     public void getResponse_addAndListTasks_tasksAreStoredAndDisplayed() {
         assertTrue(unicorn.getResponse("todo read book").contains("[T] [ ] read book"));
         assertTrue(unicorn.getResponse("deadline submit report /by 2026-09-10").contains("[D] [ ] submit report"));
@@ -31,7 +38,7 @@ public class UnicornTest {
 
         assertTrue(unicorn.getResponse("mark 1").contains("[T] [X] read book"));
         assertTrue(unicorn.getResponse("unmark 1").contains("[T] [ ] read book"));
-        assertTrue(unicorn.getResponse("delete 1").contains("Now you have 0 tasks"));
+        assertTrue(unicorn.getResponse("delete 1").contains("quest log now holds 0 quests"));
         assertEquals(0, tasks.size());
     }
 
@@ -48,10 +55,10 @@ public class UnicornTest {
 
     @Test
     public void getResponse_invalidCommands_helpfulErrorsAreDisplayed() {
-        assertTrue(unicorn.getResponse("mark abc").contains("valid task number"));
-        assertTrue(unicorn.getResponse("delete 1").contains("does not exist"));
+        assertTrue(unicorn.getResponse("mark abc").contains("valid quest number"));
+        assertTrue(unicorn.getResponse("delete 1").contains("not appeared"));
         assertTrue(unicorn.getResponse("deadline report /by tomorrow").contains("Please use"));
-        assertTrue(unicorn.getResponse("unknown").contains("I don't understand"));
+        assertTrue(unicorn.getResponse("unknown").contains("signal was unclear"));
     }
 
     @Test
@@ -62,7 +69,17 @@ public class UnicornTest {
 
         String response = failingUnicorn.getResponse("todo read book");
 
-        assertTrue(response.contains("could not save"));
+        assertTrue(response.contains("could not save your quests"));
         assertEquals(0, tasks.size());
+    }
+
+    @Test
+    public void getResponse_supportedCommands_usePrismaPersonality() {
+        assertTrue(unicorn.getResponse("list").contains("quest log is clear"));
+        assertTrue(unicorn.getResponse("todo read book").contains("added to the rainbow"));
+        assertTrue(unicorn.getResponse("mark 1").contains("quest conquered"));
+        assertTrue(unicorn.getResponse("unmark 1").contains("Quest reopened"));
+        assertTrue(unicorn.getResponse("find book").contains("unicorn senses"));
+        assertTrue(unicorn.getResponse("bye").contains("Prisma"));
     }
 }
