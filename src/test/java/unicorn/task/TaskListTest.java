@@ -78,6 +78,27 @@ public class TaskListTest {
     }
 
     /**
+     * Verifies that upcoming deadline searches filter and order reminder candidates.
+     */
+    @Test
+    void findUpcomingDeadlines_mixedTasks_onlyIncompleteDeadlinesInRangeReturnedChronologically() {
+        LocalDateTime rangeStart = LocalDateTime.of(2026, 9, 14, 12, 0);
+        DeadlineTask laterDeadline = new DeadlineTask("submit report", rangeStart.plusDays(5));
+        DeadlineTask overdueDeadline = new DeadlineTask("return book", rangeStart.minusMinutes(1));
+        DeadlineTask completedDeadline = new DeadlineTask("pay bill", rangeStart.plusDays(2));
+        completedDeadline.markAsDone();
+        DeadlineTask earliestDeadline = new DeadlineTask("attend consultation", rangeStart);
+        DeadlineTask rangeEndDeadline = new DeadlineTask("present project", rangeStart.plusDays(7));
+        DeadlineTask beyondRangeDeadline = new DeadlineTask("renew pass", rangeStart.plusDays(7).plusMinutes(1));
+        TaskList tasks = new TaskList(List.of(laterDeadline, overdueDeadline, completedDeadline,
+                new TodoTask("buy stationery"), rangeEndDeadline, earliestDeadline, beyondRangeDeadline));
+
+        assertEquals(List.of(earliestDeadline, laterDeadline, rangeEndDeadline),
+                tasks.findUpcomingDeadlines(rangeStart, rangeStart.plusDays(7)),
+                "Reminder candidates should be incomplete deadlines in the inclusive range, ordered by due time.");
+    }
+
+    /**
      * Verifies that programmers cannot place null entries in a task list.
      */
     @Test

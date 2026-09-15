@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +47,35 @@ public class UnicornTest {
 
         assertTrue(response.contains("read book"));
         assertFalse(response.contains("buy groceries"));
+    }
+
+    @Test
+    public void getResponse_reminders_onlyUpcomingIncompleteDeadlinesAreDisplayed() {
+        Clock fixedClock = Clock.fixed(Instant.parse("2026-09-14T04:00:00Z"), ZoneOffset.ofHours(8));
+        Unicorn fixedTimeUnicorn = new Unicorn(tasks, ignoredTasks -> { }, fixedClock);
+        fixedTimeUnicorn.getResponse("deadline later task /by 2026-09-20 1200");
+        fixedTimeUnicorn.getResponse("deadline earlier task /by 2026-09-15 1200");
+        fixedTimeUnicorn.getResponse("deadline distant task /by 2026-09-22 1200");
+        fixedTimeUnicorn.getResponse("deadline completed task /by 2026-09-16 1200");
+        fixedTimeUnicorn.getResponse("mark 4");
+        fixedTimeUnicorn.getResponse("todo undated task");
+
+        String response = fixedTimeUnicorn.getResponse("reminders");
+
+        assertTrue(response.contains("1. [D] [ ] earlier task"));
+        assertTrue(response.contains("2. [D] [ ] later task"));
+        assertFalse(response.contains("distant task"));
+        assertFalse(response.contains("completed task"));
+        assertFalse(response.contains("undated task"));
+    }
+
+    @Test
+    public void getResponse_remindersNoUpcomingDeadline_emptyReminderMessageDisplayed() {
+        Clock fixedClock = Clock.fixed(Instant.parse("2026-09-14T04:00:00Z"), ZoneOffset.ofHours(8));
+        Unicorn fixedTimeUnicorn = new Unicorn(tasks, ignoredTasks -> { }, fixedClock);
+
+        assertEquals("You have no incomplete deadlines due in the next seven days.",
+                fixedTimeUnicorn.getResponse("reminders"));
     }
 
     @Test

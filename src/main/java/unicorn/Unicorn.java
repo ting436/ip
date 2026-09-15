@@ -1,6 +1,8 @@
 package unicorn;
 
 import java.io.IOException;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
@@ -15,20 +17,23 @@ import unicorn.task.TodoTask;
  * Processes commands for the Unicorn task chatbot.
  */
 public class Unicorn {
+    private static final int REMINDER_WINDOW_DAYS = 7;
     private static final String HELP_MESSAGE = "I don't understand that command. You may add tasks by specifying "
             + "todo, event, or deadline at the start, or view your tasks by entering 'list' or 'find'. "
             + "You may also mark, unmark, or delete your tasks by specifying "
-            + "'mark', 'unmark', or 'delete' followed by the index of the task.";
+            + "'mark', 'unmark', or 'delete' followed by the index of the task. "
+            + "Enter 'reminders' to view deadlines due in the next seven days.";
 
     private final TaskList tasks;
     private final TaskSaver taskSaver;
+    private final Clock clock;
     private String commandType;
 
     /**
      * Creates a chatbot using tasks loaded from the default data file.
      */
     public Unicorn() {
-        this(loadTasks(), Storage::save);
+        this(loadTasks(), Storage::save, Clock.systemDefaultZone());
     }
 
     /**
@@ -38,11 +43,24 @@ public class Unicorn {
      * @param taskSaver operation used to save task changes
      */
     Unicorn(TaskList tasks, TaskSaver taskSaver) {
+        this(tasks, taskSaver, Clock.systemDefaultZone());
+    }
+
+    /**
+     * Creates a chatbot with supplied tasks, persistence behavior, and clock.
+     *
+     * @param tasks initial tasks managed by the chatbot
+     * @param taskSaver operation used to save task changes
+     * @param clock source of the current time for reminders
+     */
+    Unicorn(TaskList tasks, TaskSaver taskSaver, Clock clock) {
         assert tasks != null : "Task list must not be null";
         assert taskSaver != null : "Task saver must not be null";
+        assert clock != null : "Clock must not be null";
 
         this.tasks = tasks;
         this.taskSaver = taskSaver;
+        this.clock = clock;
     }
 
     /**
@@ -57,6 +75,8 @@ public class Unicorn {
 
         if (input.equals("list")) {
             return formatTasks(tasks.asList());
+        } else if (input.equals("reminders")) {
+            return getReminders();
         } else if (input.startsWith("find ")) {
             return findTasks(input.substring(5));
         } else if (input.startsWith("mark ")) {
@@ -75,6 +95,16 @@ public class Unicorn {
             return "Bye. Hope to see you again soon!";
         }
         return HELP_MESSAGE;
+    }
+
+    private String getReminders() {
+        LocalDateTime now = LocalDateTime.now(clock);
+        List<Task> upcomingDeadlines = tasks.findUpcomingDeadlines(now, now.plusDays(REMINDER_WINDOW_DAYS));
+        if (upcomingDeadlines.isEmpty()) {
+            return "You have no incomplete deadlines due in the next seven days.";
+        }
+        return "Here are your incomplete deadlines due in the next seven days:\n"
+                + formatTasks(upcomingDeadlines);
     }
 
     public String getCommandType() {

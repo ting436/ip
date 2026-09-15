@@ -1,6 +1,8 @@
 package unicorn.task;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -81,6 +83,28 @@ public class TaskList {
         String normalizedKeyword = keyword.toLowerCase();
         return tasks.stream()
                 .filter(task -> task.getDescription().toLowerCase().contains(normalizedKeyword))
+                .toList();
+    }
+
+    /**
+     * Finds incomplete deadlines due within an inclusive date-time range.
+     *
+     * @param rangeStart start of the reminder range
+     * @param rangeEnd end of the reminder range
+     * @return matching deadlines ordered from earliest to latest
+     */
+    public List<Task> findUpcomingDeadlines(LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+        assert rangeStart != null : "Reminder range start must not be null";
+        assert rangeEnd != null : "Reminder range end must not be null";
+        assert !rangeEnd.isBefore(rangeStart) : "Reminder range end must not be before its start";
+
+        return tasks.stream()
+                .filter(task -> task instanceof DeadlineTask)
+                .filter(task -> !task.isDone())
+                .map(task -> (DeadlineTask) task)
+                .filter(task -> !task.getBy().isBefore(rangeStart) && !task.getBy().isAfter(rangeEnd))
+                .sorted(Comparator.comparing(DeadlineTask::getBy))
+                .map(task -> (Task) task)
                 .toList();
     }
 
