@@ -26,8 +26,8 @@ public class Ui {
      */
     public void showWelcome(String banner) {
         System.out.println(banner);
-        System.out.println("Hello! I'm Unicorn.");
-        System.out.println("What can I do for you?");
+        System.out.println("Hello! I'm Prisma, your wise tech unicorn.");
+        System.out.println("What quest can I help you with?");
     }
 
     /**

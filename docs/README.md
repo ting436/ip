@@ -1,6 +1,6 @@
-# Duke User Guide
+# Prisma User Guide
 
-// Update the title above to match the actual product name
+Prisma is a colorful, wise tech-unicorn chatbot that helps you manage tasks, deadlines, and events.
 
 // Product screenshot goes here
 
