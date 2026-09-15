@@ -22,6 +22,24 @@ public class UnicornTest {
     }
 
     @Test
+    public void getResponse_hi_greetingAndAvailableCommandsDisplayed() {
+        String response = unicorn.getResponse("hi");
+
+        assertTrue(response.startsWith("Hi! Prisma the tech unicorn is online"));
+        assertTrue(response.contains("  hi"));
+        assertTrue(response.contains("todo DESCRIPTION"));
+        assertTrue(response.contains("deadline DESCRIPTION /by DATE"));
+        assertTrue(response.contains("event DESCRIPTION /from START /to END"));
+        assertTrue(response.contains("list"));
+        assertTrue(response.contains("find KEYWORD"));
+        assertTrue(response.contains("mark NUMBER"));
+        assertTrue(response.contains("unmark NUMBER"));
+        assertTrue(response.contains("delete NUMBER"));
+        assertTrue(response.contains("bye"));
+        assertEquals("hi", unicorn.getCommandType());
+    }
+
+    @Test
     public void getResponse_addAndListTasks_tasksAreStoredAndDisplayed() {
         assertTrue(unicorn.getResponse("todo read book").contains("[T] [ ] read book"));
         assertTrue(unicorn.getResponse("deadline submit report /by 2026-09-10").contains("[D] [ ] submit report"));
@@ -64,7 +82,8 @@ public class UnicornTest {
     @Test
     public void getResponse_missingOrUnexpectedArguments_errorDisplayed() {
         String[] invalidCommands = {
-            "", "todo", "find", "mark", "unmark", "delete", "deadline", "event", "list extra", "bye now"
+            "", "todo", "find", "mark", "unmark", "delete", "deadline", "event", "hi there", "list extra",
+            "bye now"
         };
 
         for (String invalidCommand : invalidCommands) {

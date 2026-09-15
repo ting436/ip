@@ -17,6 +17,18 @@ import unicorn.task.TodoTask;
  * Processes commands for the Unicorn task chatbot.
  */
 public class Unicorn {
+    private static final String AVAILABLE_COMMANDS = """
+            Available commands:
+              hi
+              todo DESCRIPTION
+              deadline DESCRIPTION /by DATE
+              event DESCRIPTION /from START /to END
+              list
+              find KEYWORD
+              mark NUMBER
+              unmark NUMBER
+              delete NUMBER
+              bye""";
     private static final Pattern DEADLINE_BY_MARKER = Pattern.compile("(?<!\\S)/by(?!\\S)");
     private static final Pattern DEADLINE_FORMAT = Pattern.compile("^(.+?)\\s+/by\\s+(.+)$");
     private static final String ERROR_COMMAND_TYPE = "error";
@@ -26,6 +38,8 @@ public class Unicorn {
     private static final String HELP_MESSAGE = "That signal was unclear. Every great quest needs a map! "
             + "Add a quest with todo, event, or deadline; view quests with 'list' or 'find'; "
             + "or update them with 'mark', 'unmark', or 'delete' followed by the quest number.";
+    private static final String HI_MESSAGE = "Hi! Prisma the tech unicorn is online and ready to help.\n"
+            + AVAILABLE_COMMANDS;
     private static final String WELCOME_MESSAGE = "Hello! I'm Prisma, your wise tech unicorn. "
             + "Tell me what is on your quest list, and we'll make some magic.";
 
@@ -72,6 +86,10 @@ public class Unicorn {
         String argument = commandParts.length == 1 ? "" : commandParts[1].trim();
 
         switch (commandType) {
+            case "hi":
+                return argument.isEmpty()
+                        ? HI_MESSAGE
+                        : getErrorResponse("The hi command does not take any extra details.");
             case "list":
                 return argument.isEmpty()
                         ? formatTasks(tasks.asList())
