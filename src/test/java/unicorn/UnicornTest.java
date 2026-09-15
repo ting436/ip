@@ -62,6 +62,69 @@ public class UnicornTest {
     }
 
     @Test
+    public void getResponse_missingOrUnexpectedArguments_errorDisplayed() {
+        String[] invalidCommands = {
+            "", "todo", "find", "mark", "unmark", "delete", "deadline", "event", "list extra", "bye now"
+        };
+
+        for (String invalidCommand : invalidCommands) {
+            assertTrue(unicorn.getResponse(invalidCommand).startsWith("⚠ "),
+                    "An invalid command should display a warning: " + invalidCommand);
+            assertEquals("error", unicorn.getCommandType());
+        }
+        assertEquals(0, tasks.size());
+    }
+
+    @Test
+    public void getResponse_malformedDeadline_errorDisplayedAndTaskNotAdded() {
+        String[] invalidDeadlines = {
+            "deadline submit report",
+            "deadline /by 2026-09-30",
+            "deadline submit report /by",
+            "deadline submit report /by tomorrow",
+            "deadline submit report /by 2026-09-30 /by 2026-10-01",
+            "deadline submit report /by 2026-09-30 /by"
+        };
+
+        for (String invalidDeadline : invalidDeadlines) {
+            assertTrue(unicorn.getResponse(invalidDeadline).startsWith("⚠ "),
+                    "A malformed deadline should display a warning: " + invalidDeadline);
+            assertEquals("error", unicorn.getCommandType());
+        }
+        assertEquals(0, tasks.size());
+    }
+
+    @Test
+    public void getResponse_malformedEvent_errorDisplayedAndTaskNotAdded() {
+        String[] invalidEvents = {
+            "event project meeting",
+            "event project meeting /from 2pm",
+            "event project meeting /to 3pm /from 2pm",
+            "event project meeting /from /to 3pm",
+            "event project meeting /from 2pm /to",
+            "event project meeting /from 2pm /from 3pm /to 4pm",
+            "event project meeting /from 2pm /to 3pm /to 4pm",
+            "event project meeting /from 2pm /to 3pm /from",
+            "event project meeting /from 2pm /to 3pm /to"
+        };
+
+        for (String invalidEvent : invalidEvents) {
+            assertTrue(unicorn.getResponse(invalidEvent).startsWith("⚠ "),
+                    "A malformed event should display a warning: " + invalidEvent);
+            assertEquals("error", unicorn.getCommandType());
+        }
+        assertEquals(0, tasks.size());
+    }
+
+    @Test
+    public void getResponse_wellFormedEvent_taskIsAdded() {
+        String response = unicorn.getResponse("event project meeting /from 2pm /to 3pm");
+
+        assertTrue(response.contains("[E] [ ] project meeting (from: 2pm to: 3pm)"));
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
     public void getResponse_invalidCommand_responseIsClassifiedAndMarkedAsError() {
         String response = unicorn.getResponse("teleport home");
 

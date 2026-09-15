@@ -3,6 +3,8 @@ package unicorn;
 import java.io.IOException;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import unicorn.storage.Storage;
 import unicorn.task.DeadlineTask;
@@ -15,7 +17,12 @@ import unicorn.task.TodoTask;
  * Processes commands for the Unicorn task chatbot.
  */
 public class Unicorn {
+    private static final Pattern DEADLINE_BY_MARKER = Pattern.compile("(?<!\\S)/by(?!\\S)");
+    private static final Pattern DEADLINE_FORMAT = Pattern.compile("^(.+?)\\s+/by\\s+(.+)$");
     private static final String ERROR_COMMAND_TYPE = "error";
+    private static final Pattern EVENT_FROM_MARKER = Pattern.compile("(?<!\\S)/from(?!\\S)");
+    private static final Pattern EVENT_TO_MARKER = Pattern.compile("(?<!\\S)/to(?!\\S)");
+    private static final Pattern EVENT_FORMAT = Pattern.compile("^(.+?)\\s+/from\\s+(.+?)\\s+/to\\s+(.+)$");
     private static final String HELP_MESSAGE = "That signal was unclear. Every great quest needs a map! "
             + "Add a quest with todo, event, or deadline; view quests with 'list' or 'find'; "
             + "or update them with 'mark', 'unmark', or 'delete' followed by the quest number.";
@@ -55,28 +62,41 @@ public class Unicorn {
      */
     public String getResponse(String input) {
         assert input != null : "Input must not be null";
-        commandType = input.split(" ")[0];
-
-        if (input.equals("list")) {
-            return formatTasks(tasks.asList());
-        } else if (input.startsWith("find ")) {
-            return findTasks(input.substring(5));
-        } else if (input.startsWith("mark ")) {
-            return setTaskCompletion(input.substring(5), true);
-        } else if (input.startsWith("unmark ")) {
-            return setTaskCompletion(input.substring(7), false);
-        } else if (input.startsWith("delete ")) {
-            return deleteTask(input.substring(7));
-        } else if (input.startsWith("todo ")) {
-            return addTodo(input.substring(5));
-        } else if (input.startsWith("deadline ")) {
-            return addDeadline(input);
-        } else if (input.startsWith("event ")) {
-            return addEvent(input);
-        } else if (input.equals("bye")) {
-            return "Keep shining! Prisma will be here when your next quest begins.";
+        String trimmedInput = input.trim();
+        if (trimmedInput.isEmpty()) {
+            return getErrorResponse("Please enter a command so I know which quest to follow.");
         }
-        return getErrorResponse(HELP_MESSAGE);
+
+        String[] commandParts = trimmedInput.split("\\s+", 2);
+        commandType = commandParts[0];
+        String argument = commandParts.length == 1 ? "" : commandParts[1].trim();
+
+        switch (commandType) {
+            case "list":
+                return argument.isEmpty()
+                        ? formatTasks(tasks.asList())
+                        : getErrorResponse("The list command does not take any extra details.");
+            case "find":
+                return findTasks(argument);
+            case "mark":
+                return setTaskCompletion(argument, true);
+            case "unmark":
+                return setTaskCompletion(argument, false);
+            case "delete":
+                return deleteTask(argument);
+            case "todo":
+                return addTodo(argument);
+            case "deadline":
+                return addDeadline(argument);
+            case "event":
+                return addEvent(argument);
+            case "bye":
+                return argument.isEmpty()
+                        ? "Keep shining! Prisma will be here when your next quest begins."
+                        : getErrorResponse("The bye command does not take any extra details.");
+            default:
+                return getErrorResponse(HELP_MESSAGE);
+        }
     }
 
     /**
@@ -150,16 +170,18 @@ public class Unicorn {
         return addTask(new TodoTask(description));
     }
 
-    private String addDeadline(String input) {
-        int byIndex = input.indexOf(" /by ");
-        if (byIndex < 0) {
-            return getErrorResponse("My foresight needs a /by date for that deadline quest.");
+    private String addDeadline(String argument) {
+        Matcher deadlineMatcher = DEADLINE_FORMAT.matcher(argument);
+        if (!deadlineMatcher.matches() || !containsExactlyOne(DEADLINE_BY_MARKER, argument)) {
+            return getErrorResponse("Use: deadline DESCRIPTION /by DATE.");
         }
 
-        String description = input.substring(9, byIndex);
-        String by = input.substring(byIndex + 5);
+        String description = deadlineMatcher.group(1).trim();
+        String by = deadlineMatcher.group(2).trim();
         if (description.isBlank()) {
             return getErrorResponse("A deadline quest needs a description before I can save it.");
+        } else if (by.isBlank()) {
+            return getErrorResponse("A deadline quest needs a date after /by.");
         }
         try {
             return addTask(new DeadlineTask(description, DeadlineTask.parseBy(by)));
@@ -169,20 +191,30 @@ public class Unicorn {
         }
     }
 
-    private String addEvent(String input) {
-        int fromIndex = input.indexOf(" /from ");
-        int toIndex = input.indexOf(" /to ");
-        if (fromIndex < 0 || toIndex < fromIndex) {
-            return getErrorResponse("My event compass needs both /from and /to details.");
+    private String addEvent(String argument) {
+        Matcher eventMatcher = EVENT_FORMAT.matcher(argument);
+        boolean hasSingleFrom = containsExactlyOne(EVENT_FROM_MARKER, argument);
+        boolean hasSingleTo = containsExactlyOne(EVENT_TO_MARKER, argument);
+        if (!eventMatcher.matches() || !hasSingleFrom || !hasSingleTo) {
+            return getErrorResponse("Use: event DESCRIPTION /from START /to END.");
         }
 
-        String description = input.substring(6, fromIndex);
-        String from = input.substring(fromIndex + 7, toIndex);
-        String to = input.substring(toIndex + 5);
+        String description = eventMatcher.group(1).trim();
+        String from = eventMatcher.group(2).trim();
+        String to = eventMatcher.group(3).trim();
         if (description.isBlank()) {
             return getErrorResponse("An event quest needs a description before I can save it.");
+        } else if (from.isBlank()) {
+            return getErrorResponse("An event quest needs a start after /from.");
+        } else if (to.isBlank()) {
+            return getErrorResponse("An event quest needs an end after /to.");
         }
         return addTask(new EventTask(description, from, to));
+    }
+
+    private static boolean containsExactlyOne(Pattern markerPattern, String argument) {
+        Matcher markerMatcher = markerPattern.matcher(argument);
+        return markerMatcher.find() && !markerMatcher.find();
     }
 
     private String addTask(Task task) {
