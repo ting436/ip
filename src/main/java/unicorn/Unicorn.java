@@ -15,10 +15,11 @@ import unicorn.task.TodoTask;
  * Processes commands for the Unicorn task chatbot.
  */
 public class Unicorn {
-    private static final String HELP_MESSAGE = "I don't understand that command. You may add tasks by specifying "
-            + "todo, event, or deadline at the start, or view your tasks by entering 'list' or 'find'. "
-            + "You may also mark, unmark, or delete your tasks by specifying "
-            + "'mark', 'unmark', or 'delete' followed by the index of the task.";
+    private static final String HELP_MESSAGE = "That signal was unclear. Every great quest needs a map! "
+            + "Add a quest with todo, event, or deadline; view quests with 'list' or 'find'; "
+            + "or update them with 'mark', 'unmark', or 'delete' followed by the quest number.";
+    private static final String WELCOME_MESSAGE = "Hello! I'm Prisma, your wise tech unicorn. "
+            + "Tell me what is on your quest list, and we'll make some magic.";
 
     private final TaskList tasks;
     private final TaskSaver taskSaver;
@@ -72,9 +73,18 @@ public class Unicorn {
         } else if (input.startsWith("event ")) {
             return addEvent(input);
         } else if (input.equals("bye")) {
-            return "Bye. Hope to see you again soon!";
+            return "Keep shining! Prisma will be here when your next quest begins.";
         }
         return HELP_MESSAGE;
+    }
+
+    /**
+     * Returns Prisma's introductory greeting.
+     *
+     * @return welcome message that introduces the chatbot's personality
+     */
+    public String getWelcomeMessage() {
+        return WELCOME_MESSAGE;
     }
 
     public String getCommandType() {
@@ -83,10 +93,10 @@ public class Unicorn {
 
     private String findTasks(String keyword) {
         if (keyword.isBlank()) {
-            return "OOPS!!! Please specify a keyword to find.";
+            return "My unicorn senses need a keyword before they can search.";
         }
         List<Task> matchingTasks = tasks.find(keyword);
-        return "Here are the matching tasks in your list:\n" + formatTasks(matchingTasks);
+        return "My unicorn senses found these matching quests:\n" + formatTasks(matchingTasks);
     }
 
     private String setTaskCompletion(String argument, boolean isDone) {
@@ -107,9 +117,9 @@ public class Unicorn {
             return getSaveError();
         }
         if (isDone) {
-            return "Nice! I've marked this task as done:\n" + task;
+            return "Brilliant work—another quest conquered!\n" + task;
         }
-        return "OK, I've marked this task as not done yet:\n" + task;
+        return "Quest reopened. Even wise adventurers revise their plans.\n" + task;
     }
 
     private String deleteTask(String argument) {
@@ -123,13 +133,13 @@ public class Unicorn {
             tasks.add(taskIndex, deletedTask);
             return getSaveError();
         }
-        return "Noted. I've removed this task:\n  " + deletedTask
-                + "\nNow you have " + tasks.size() + " tasks in the list.";
+        return "Poof! This quest has left the digital realm:\n  " + deletedTask
+                + "\nYour quest log now holds " + tasks.size() + " quests.";
     }
 
     private String addTodo(String description) {
         if (description.isBlank()) {
-            return "OOPS!!! The description of a todo cannot be empty.";
+            return "A quest needs a description before I can weave it into the list.";
         }
         return addTask(new TodoTask(description));
     }
@@ -137,18 +147,18 @@ public class Unicorn {
     private String addDeadline(String input) {
         int byIndex = input.indexOf(" /by ");
         if (byIndex < 0) {
-            return "OOPS!!! A deadline needs a /by date.";
+            return "My foresight needs a /by date for that deadline quest.";
         }
 
         String description = input.substring(9, byIndex);
         String by = input.substring(byIndex + 5);
         if (description.isBlank()) {
-            return "OOPS!!! The description of a deadline cannot be empty.";
+            return "A deadline quest needs a description before I can save it.";
         }
         try {
             return addTask(new DeadlineTask(description, DeadlineTask.parseBy(by)));
         } catch (DateTimeParseException e) {
-            return "OOPS!!! Please use yyyy-MM-dd, yyyy-MM-dd HHmm, "
+            return "A little time glitch! Please use yyyy-MM-dd, yyyy-MM-dd HHmm, "
                     + "or d/M/yyyy HHmm for deadlines.";
         }
     }
@@ -157,14 +167,14 @@ public class Unicorn {
         int fromIndex = input.indexOf(" /from ");
         int toIndex = input.indexOf(" /to ");
         if (fromIndex < 0 || toIndex < fromIndex) {
-            return "OOPS!!! An event needs /from and /to details.";
+            return "My event compass needs both /from and /to details.";
         }
 
         String description = input.substring(6, fromIndex);
         String from = input.substring(fromIndex + 7, toIndex);
         String to = input.substring(toIndex + 5);
         if (description.isBlank()) {
-            return "OOPS!!! The description of an event cannot be empty.";
+            return "An event quest needs a description before I can save it.";
         }
         return addTask(new EventTask(description, from, to));
     }
@@ -175,8 +185,8 @@ public class Unicorn {
             tasks.delete(tasks.size() - 1);
             return getSaveError();
         }
-        return "Got it. I've added this task:\n  " + task
-                + "\nNow you have " + tasks.size() + " tasks in the list.";
+        return "Your quest has been added to the rainbow:\n  " + task
+                + "\nYour quest log now holds " + tasks.size() + " quests.";
     }
 
     private Task getTask(String argument) {
@@ -198,13 +208,13 @@ public class Unicorn {
 
     private String getTaskNumberError(String argument) {
         if (argument.isBlank()) {
-            return "OOPS!!! Please specify a task number.";
+            return "My quest compass needs a quest number.";
         }
         try {
             Integer.parseInt(argument);
-            return "OOPS!!! That task number does not exist.";
+            return "That quest number has not appeared in this realm yet.";
         } catch (NumberFormatException e) {
-            return "OOPS!!! Please provide a valid task number.";
+            return "That signal is not a valid quest number.";
         }
     }
 
@@ -227,7 +237,7 @@ public class Unicorn {
 
     private static String formatTasks(List<Task> tasks) {
         if (tasks.isEmpty()) {
-            return "You have no tasks in your list.";
+            return "Your quest log is clear. Enjoy the breathing room!";
         }
         StringBuilder response = new StringBuilder();
         for (int index = 0; index < tasks.size(); index++) {
@@ -248,7 +258,7 @@ public class Unicorn {
     }
 
     private static String getSaveError() {
-        return "OOPS!!! I could not save your tasks. The change was not applied.";
+        return "A little glitch disturbed the magic. I could not save your quests, so nothing changed.";
     }
 
     /**
