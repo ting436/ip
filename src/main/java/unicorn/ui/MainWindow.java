@@ -40,11 +40,13 @@ public class MainWindow extends AnchorPane {
      */
     public void setUnicorn(Unicorn unicorn) {
         this.unicorn = unicorn;
+        dialogContainer.getChildren().add(
+                DialogBox.getUnicornDialog(unicorn.getWelcomeMessage(), unicornImage, "welcome")
+        );
     }
 
     /**
-     * Creates two dialog boxes, one echoing user input and the other containing Duke's reply and then appends them to
-     * the dialog container. Clears the user input after processing.
+     * Creates dialog boxes for the user's input and Prisma's reply, then clears the input field.
      */
     @FXML
     private void handleUserInput() {

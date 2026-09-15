@@ -1,54 +1,46 @@
-/* User message */
 .label {
-    -fx-background-color: #F4A7B9;
-
-    -fx-border-color: #E98DA3;
+    -fx-background-color: linear-gradient(to bottom right, #E946B4, #B847D9);
+    -fx-border-color: #FF8DDA;
     -fx-border-width: 1px;
-
     -fx-background-radius: 1em 1em 0 1em;
     -fx-border-radius: 1em 1em 0 1em;
-
-    -fx-text-fill: #4A2932;
-    -fx-padding: 8px 12px;
+    -fx-font-family: "Trebuchet MS";
+    -fx-font-size: 14px;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 10px 14px;
 }
 
-/* Bot reply */
 .reply-label {
-    -fx-background-color: #FFE1E8;
-
-    -fx-border-color: #F4B6C2;
+    -fx-background-color: #EDE9FF;
+    -fx-border-color: #9C8CF7;
     -fx-border-width: 1px;
-
     -fx-background-radius: 1em 1em 1em 0;
     -fx-border-radius: 1em 1em 1em 0;
-
-    -fx-text-fill: #4A2932;
+    -fx-text-fill: #241846;
 }
 
 .add-label {
-    -fx-background-color: lightyellow;
+    -fx-background-color: #CFF8FF;
+    -fx-border-color: #36CFE3;
 }
 
 .marked-label {
-    -fx-background-color: palegreen;
+    -fx-background-color: #D7FBE8;
+    -fx-border-color: #45D69A;
 }
 
 .delete-label {
-    -fx-background-color: #F8A5A5;
+    -fx-background-color: #FFE0E8;
+    -fx-border-color: #FF789A;
 }
 
-/* Display picture */
 #displayPicture {
     -fx-effect: dropshadow(
             gaussian,
-            rgba(177, 105, 125, 0.20),
-            10,
-            0.4,
-            2,
-            3
+            rgba(80, 220, 255, 0.45),
+            14,
+            0.45,
+            0,
+            2
     );
-
-    -fx-scale-x: 1;
-    -fx-scale-y: 1;
-    -fx-rotate: 0;
 }

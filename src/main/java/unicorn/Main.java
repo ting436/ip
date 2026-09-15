@@ -5,6 +5,7 @@ import java.io.IOException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import unicorn.ui.MainWindow;
@@ -23,7 +24,8 @@ public class Main extends Application {
         mainWindow.setUnicorn(unicorn);
 
         stage.setScene(new Scene(mainLayout));
-        stage.setTitle("Unicorn");
+        stage.setTitle("Prisma — Wise Tech Unicorn");
+        stage.getIcons().add(new Image(Main.class.getResourceAsStream("/images/Unicorn.png")));
         stage.show();
     }
 }
