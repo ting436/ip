@@ -18,8 +18,7 @@ simple text commands.
 4. Enter a command in the text field and press <kbd>Enter</kbd> or select **SEND ✦**.
 5. Start with `hi` whenever you want to see the available commands.
 
-> [!TIP]
-> Commands are lowercase. Words such as `DESCRIPTION`, `DATE`, and `NUMBER` in this guide are placeholders;
+> **Tip:** Commands are lowercase. Words such as `DESCRIPTION`, `DATE`, and `NUMBER` in this guide are placeholders;
 > replace them with your own details.
 
 ## Features
@@ -138,8 +137,7 @@ Prisma saves changes automatically after you add, mark, unmark, or delete a task
 `data/unicorn.txt`, relative to the folder from which you launched the application. Prisma loads the saved tasks
 the next time it starts.
 
-> [!WARNING]
-> Do not edit the data file while Prisma is running. Invalid changes can prevent saved tasks from loading.
+> **Warning:** Do not edit the data file while Prisma is running. Invalid changes can prevent saved tasks from loading.
 
 ## Input errors
 
