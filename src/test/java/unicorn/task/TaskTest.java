@@ -63,4 +63,19 @@ public class TaskTest {
         assertEquals(" ", task.getStatusIcon(), "A reopened task should have an empty status icon.");
         assertEquals("[ ] read book", task.toString(), "A reopened task should use the incomplete display format.");
     }
+
+    /**
+     * Verifies that duplicate comparison ignores status, case, and cosmetic whitespace.
+     */
+    @Test
+    void hasSameDetailsAs_cosmeticDifferences_tasksConsideredEquivalent() {
+        Task firstTask = new TodoTask("Read   Book");
+        Task secondTask = new TodoTask("read book");
+        secondTask.markAsDone();
+
+        assertTrue(firstTask.hasSameDetailsAs(secondTask),
+                "Cosmetic text differences and status should not make a distinct task.");
+        assertFalse(firstTask.hasSameDetailsAs(new EventTask("read book", "2pm", "3pm")),
+                "Different task types should remain distinct.");
+    }
 }

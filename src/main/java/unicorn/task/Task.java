@@ -1,5 +1,7 @@
 package unicorn.task;
 
+import java.util.Locale;
+
 /**
  * Represents a task with a description and completion status.
  */
@@ -50,6 +52,20 @@ public class Task {
     }
 
     /**
+     * Reports whether another task has the same type and user-entered details.
+     * Completion status is intentionally ignored because it does not make a
+     * task a different quest.
+     *
+     * @param other task to compare
+     * @return {@code true} when both tasks represent the same quest
+     */
+    public boolean hasSameDetailsAs(Task other) {
+        return other != null
+                && getClass().equals(other.getClass())
+                && normalizeDetail(description).equals(normalizeDetail(other.description));
+    }
+
+    /**
      * Marks this task as complete.
      */
     public void markAsDone() {
@@ -71,5 +87,15 @@ public class Task {
     @Override
     public String toString() {
         return "[" + getStatusIcon() + "] " + description;
+    }
+
+    /**
+     * Normalizes user-entered details for duplicate detection.
+     *
+     * @param detail detail to normalize
+     * @return lowercase detail with surrounding and repeated whitespace removed
+     */
+    protected static String normalizeDetail(String detail) {
+        return detail.strip().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
     }
 }

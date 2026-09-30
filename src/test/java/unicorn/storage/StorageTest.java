@@ -92,6 +92,30 @@ public class StorageTest {
     }
 
     /**
+     * Verifies that blank required fields and duplicate tasks are treated as corrupted data.
+     *
+     * @param testDirectory temporary directory supplied by JUnit for this test
+     * @throws IOException if the test data files cannot be written
+     */
+    @Test
+    void load_blankFieldsOrDuplicateTasks_invalidTaskDataRejected(@TempDir Path testDirectory) throws IOException {
+        Path blankEventFieldFile = testDirectory.resolve("blank-event-field.txt");
+        Files.writeString(blankEventFieldFile, "E | 0 | meeting |    | 3pm");
+        assertInvalidTaskData(blankEventFieldFile);
+
+        Path duplicateTaskFile = testDirectory.resolve("duplicate-task.txt");
+        Files.write(duplicateTaskFile, List.of(
+                "T | 0 | Read   Book",
+                "T | 1 | read book"));
+        assertInvalidTaskData(duplicateTaskFile);
+
+        Path reversedEventFile = testDirectory.resolve("reversed-event.txt");
+        Files.writeString(reversedEventFile,
+                "E | 0 | meeting | 2026-09-30 1100 | 2026-09-30 1000");
+        assertInvalidTaskData(reversedEventFile);
+    }
+
+    /**
      * Checks that malformed stored data is rejected with a clear exception.
      *
      * @param dataFile file containing invalid task data

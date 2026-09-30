@@ -35,6 +35,8 @@ public class DeadlineTaskTest {
     void parseBy_invalidDateTime_exceptionThrown() {
         assertThrows(DateTimeParseException.class, () -> DeadlineTask.parseBy("2019-13-01"),
                 "A date with an invalid month should be rejected.");
+        assertThrows(DateTimeParseException.class, () -> DeadlineTask.parseBy("2019-02-30"),
+                "A nonexistent calendar date should be rejected.");
         assertThrows(DateTimeParseException.class, () -> DeadlineTask.parseBy("tomorrow evening"),
                 "An unsupported deadline format should be rejected.");
     }

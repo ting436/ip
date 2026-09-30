@@ -2,6 +2,7 @@ package unicorn.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Stores the tasks currently managed by the chatbot.
@@ -78,10 +79,22 @@ public class TaskList {
      * @return matching tasks in their original list order
      */
     public List<Task> find(String keyword) {
-        String normalizedKeyword = keyword.toLowerCase();
+        String normalizedKeyword = keyword.toLowerCase(Locale.ROOT);
         return tasks.stream()
-                .filter(task -> task.getDescription().toLowerCase().contains(normalizedKeyword))
+                .filter(task -> task.getDescription().toLowerCase(Locale.ROOT).contains(normalizedKeyword))
                 .toList();
+    }
+
+    /**
+     * Reports whether the list already contains a task with the same details.
+     *
+     * @param candidate task whose details should be checked
+     * @return {@code true} when an equivalent task is already present
+     */
+    public boolean containsEquivalent(Task candidate) {
+        assert candidate != null : "Candidate task must not be null";
+
+        return tasks.stream().anyMatch(task -> task.hasSameDetailsAs(candidate));
     }
 
     /**

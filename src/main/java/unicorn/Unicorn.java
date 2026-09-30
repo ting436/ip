@@ -45,13 +45,18 @@ public class Unicorn {
 
     private final TaskList tasks;
     private final TaskSaver taskSaver;
+    private final String startupWarning;
     private String commandType;
 
     /**
      * Creates a chatbot using tasks loaded from the default data file.
      */
     public Unicorn() {
-        this(loadTasks(), Storage::save);
+        this(loadTasks());
+    }
+
+    private Unicorn(LoadResult loadResult) {
+        this(loadResult.tasks(), Storage::save, loadResult.warning());
     }
 
     /**
@@ -61,11 +66,17 @@ public class Unicorn {
      * @param taskSaver operation used to save task changes
      */
     Unicorn(TaskList tasks, TaskSaver taskSaver) {
+        this(tasks, taskSaver, "");
+    }
+
+    private Unicorn(TaskList tasks, TaskSaver taskSaver, String startupWarning) {
         assert tasks != null : "Task list must not be null";
         assert taskSaver != null : "Task saver must not be null";
+        assert startupWarning != null : "Startup warning must not be null";
 
         this.tasks = tasks;
         this.taskSaver = taskSaver;
+        this.startupWarning = startupWarning;
     }
 
     /**
@@ -75,11 +86,13 @@ public class Unicorn {
      * @return response describing the command result
      */
     public String getResponse(String input) {
-        assert input != null : "Input must not be null";
-        String trimmedInput = input.trim();
-        if (trimmedInput.isEmpty()) {
+        if (input == null || input.isBlank()) {
             return getErrorResponse("Please enter a command so I know which quest to follow.");
         }
+        if (input.chars().anyMatch(Character::isISOControl)) {
+            return getErrorResponse("Commands cannot contain line breaks or other control characters.");
+        }
+        String trimmedInput = input.trim();
 
         String[] commandParts = trimmedInput.split("\\s+", 2);
         commandType = commandParts[0];
@@ -123,7 +136,7 @@ public class Unicorn {
      * @return welcome message that introduces the chatbot's personality
      */
     public String getWelcomeMessage() {
-        return WELCOME_MESSAGE;
+        return startupWarning.isEmpty() ? WELCOME_MESSAGE : WELCOME_MESSAGE + "\n\n⚠ " + startupWarning;
     }
 
     /**
@@ -227,7 +240,14 @@ public class Unicorn {
         } else if (to.isBlank()) {
             return getErrorResponse("An event quest needs an end after /to.");
         }
-        return addTask(new EventTask(description, from, to));
+        try {
+            return addTask(new EventTask(description, from, to));
+        } catch (DateTimeParseException e) {
+            return getErrorResponse("A little time glitch! Numeric event dates must use yyyy-MM-dd, "
+                    + "yyyy-MM-dd HHmm, or d/M/yyyy HHmm.");
+        } catch (IllegalArgumentException e) {
+            return getErrorResponse("An event must end after it starts.");
+        }
     }
 
     private static boolean containsExactlyOne(Pattern markerPattern, String argument) {
@@ -236,6 +256,9 @@ public class Unicorn {
     }
 
     private String addTask(Task task) {
+        if (tasks.containsEquivalent(task)) {
+            return getErrorResponse("That quest is already in your quest log.");
+        }
         tasks.add(task);
         if (!saveTasks()) {
             tasks.delete(tasks.size() - 1);
@@ -288,11 +311,15 @@ public class Unicorn {
         }
     }
 
-    private static TaskList loadTasks() {
+    private static LoadResult loadTasks() {
         try {
-            return new TaskList(Storage.load());
-        } catch (IOException | IllegalArgumentException e) {
-            return new TaskList();
+            return new LoadResult(new TaskList(Storage.load()), "");
+        } catch (IOException e) {
+            return new LoadResult(new TaskList(),
+                    "I could not read the saved quest file. This session started with an empty list.");
+        } catch (IllegalArgumentException e) {
+            return new LoadResult(new TaskList(),
+                    "The saved quest file contains invalid data. This session started with an empty list.");
         }
     }
 
@@ -330,5 +357,8 @@ public class Unicorn {
     @FunctionalInterface
     interface TaskSaver {
         void save(List<Task> tasks) throws IOException;
+    }
+
+    private record LoadResult(TaskList tasks, String warning) {
     }
 }

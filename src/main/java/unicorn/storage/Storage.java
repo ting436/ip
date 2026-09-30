@@ -39,7 +39,10 @@ public class Storage {
      * @throws IOException if the directory or file cannot be written
      */
     static void save(Path dataFile, List<Task> tasks) throws IOException {
-        Files.createDirectories(dataFile.getParent());
+        Path parentDirectory = dataFile.getParent();
+        if (parentDirectory != null) {
+            Files.createDirectories(parentDirectory);
+        }
         List<String> taskLines = tasks.stream()
                 .map(Storage::toFileString)
                 .toList();
@@ -75,7 +78,11 @@ public class Storage {
         for (int lineNumber = 0; lineNumber < taskLines.size(); lineNumber++) {
             String taskLine = taskLines.get(lineNumber);
             if (!taskLine.isBlank()) {
-                tasks.add(toTask(taskLine, lineNumber + 1));
+                Task task = toTask(taskLine, lineNumber + 1);
+                if (tasks.stream().anyMatch(existingTask -> existingTask.hasSameDetailsAs(task))) {
+                    throw invalidTaskData(lineNumber + 1);
+                }
+                tasks.add(task);
             }
         }
         return tasks;
@@ -116,24 +123,23 @@ public class Storage {
         Task task;
         switch (parts[0]) {
             case "T":
-                if (parts.length != 3 || parts[2].isBlank()) {
+                if (parts.length != 3) {
                     throw invalidTaskData(lineNumber);
                 }
-                task = new TodoTask(unescapeField(parts[2], lineNumber));
+                task = new TodoTask(requireNonBlank(parts[2], lineNumber));
                 break;
             case "D":
-                if (parts.length != 4 || parts[2].isBlank()) {
+                if (parts.length != 4) {
                     throw invalidTaskData(lineNumber);
                 }
-                task = new DeadlineTask(unescapeField(parts[2], lineNumber),
+                task = new DeadlineTask(requireNonBlank(parts[2], lineNumber),
                         parseDeadline(parts[3], lineNumber));
                 break;
             case "E":
-                if (parts.length != 5 || parts[2].isBlank()) {
+                if (parts.length != 5) {
                     throw invalidTaskData(lineNumber);
                 }
-                task = new EventTask(unescapeField(parts[2], lineNumber),
-                        unescapeField(parts[3], lineNumber), unescapeField(parts[4], lineNumber));
+                task = createEvent(parts[2], parts[3], parts[4], lineNumber);
                 break;
             default:
                 throw invalidTaskData(lineNumber);
@@ -167,6 +173,23 @@ public class Storage {
         } catch (DateTimeParseException e) {
             throw invalidTaskData(lineNumber);
         }
+    }
+
+    private static EventTask createEvent(String description, String from, String to, int lineNumber) {
+        try {
+            return new EventTask(requireNonBlank(description, lineNumber),
+                    requireNonBlank(from, lineNumber), requireNonBlank(to, lineNumber));
+        } catch (IllegalArgumentException e) {
+            throw invalidTaskData(lineNumber);
+        }
+    }
+
+    private static String requireNonBlank(String field, int lineNumber) {
+        String unescapedField = unescapeField(field, lineNumber);
+        if (unescapedField.isBlank() || unescapedField.chars().anyMatch(Character::isISOControl)) {
+            throw invalidTaskData(lineNumber);
+        }
+        return unescapedField;
     }
 
     /**

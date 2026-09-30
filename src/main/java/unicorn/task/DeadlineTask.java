@@ -5,17 +5,19 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.Locale;
 
 /**
  * Represents a task that must be completed by a date or date and time.
  */
 public class DeadlineTask extends Task {
-    private static final DateTimeFormatter DATE_INPUT_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd");
+    private static final DateTimeFormatter DATE_INPUT_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd")
+            .withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter DATE_TIME_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm");
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm").withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter EXAMPLE_DATE_TIME_INPUT_FORMAT =
-            DateTimeFormatter.ofPattern("d/M/uuuu HHmm");
+            DateTimeFormatter.ofPattern("d/M/uuuu HHmm").withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter DATE_OUTPUT_FORMAT =
             DateTimeFormatter.ofPattern("MMM dd uuuu", Locale.ENGLISH);
     private static final DateTimeFormatter DATE_TIME_OUTPUT_FORMAT =
@@ -64,6 +66,18 @@ public class DeadlineTask extends Task {
      */
     public LocalDateTime getBy() {
         return by;
+    }
+
+    /**
+     * Reports whether another deadline has the same description and due date.
+     *
+     * @param other task to compare
+     * @return {@code true} when both tasks represent the same deadline
+     */
+    @Override
+    public boolean hasSameDetailsAs(Task other) {
+        return super.hasSameDetailsAs(other)
+                && by.equals(((DeadlineTask) other).by);
     }
 
     /**

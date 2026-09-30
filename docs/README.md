@@ -71,6 +71,8 @@ event project meeting /from Monday 2pm /to Monday 3pm
 ```
 
 Both markers are required, must appear exactly once, and must be written in the order `/from` then `/to`.
+When both bounds use one of the numeric deadline formats, Prisma also checks that the dates exist and that
+the event ends after it starts.
 
 ### Listing tasks: `list`
 
@@ -143,6 +145,14 @@ the next time it starts.
 
 If a command is incomplete or incorrectly formatted, Prisma displays a highlighted warning beginning with `⚠`.
 The task list is left unchanged, so you can correct the command and try again.
+
+Prisma also rejects duplicate tasks. Differences in capitalization, repeated spaces, or completion status do not
+make an otherwise identical task unique. Invalid calendar dates, equal or reversed numeric event periods, and
+commands containing line breaks or control characters are rejected as well.
+
+If the saved data file cannot be read or contains invalid records, Prisma starts with an empty quest list and shows
+a warning in its welcome message. Fix or restore `data/unicorn.txt` before adding tasks if you need to preserve the
+previous data.
 
 ## Command summary
 

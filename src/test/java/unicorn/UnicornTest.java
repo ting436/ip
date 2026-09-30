@@ -136,6 +136,40 @@ public class UnicornTest {
     }
 
     @Test
+    public void getResponse_invalidEventDatesOrPeriod_errorDisplayedAndTaskNotAdded() {
+        String[] invalidEvents = {
+            "event launch /from 2026-02-30 0900 /to 2026-03-01 0900",
+            "event launch /from 2026-09-30 1000 /to 2026-09-30 1000",
+            "event launch /from 2026-09-30 1100 /to 2026-09-30 1000"
+        };
+
+        for (String invalidEvent : invalidEvents) {
+            assertTrue(unicorn.getResponse(invalidEvent).startsWith("⚠ "),
+                    "An invalid event period should display a warning: " + invalidEvent);
+        }
+        assertEquals(0, tasks.size());
+    }
+
+    @Test
+    public void getResponse_duplicateTaskWithCosmeticDifferences_errorDisplayedAndTaskNotAdded() {
+        unicorn.getResponse("todo Read   Book");
+
+        String response = unicorn.getResponse("todo read book");
+
+        assertTrue(response.contains("already in your quest log"));
+        assertEquals("error", unicorn.getCommandType());
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
+    public void getResponse_controlCharacter_errorDisplayedAndTaskNotAdded() {
+        String response = unicorn.getResponse("todo read\nbook");
+
+        assertTrue(response.contains("control characters"));
+        assertEquals(0, tasks.size());
+    }
+
+    @Test
     public void getResponse_wellFormedEvent_taskIsAdded() {
         String response = unicorn.getResponse("event project meeting /from 2pm /to 3pm");
 
